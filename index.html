@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>כרטיס גירוד</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background-color: #f9f9f9;
+    }
+    #scratchCanvas {
+      margin-top: 50px;
+      border: 2px solid #888;
+      cursor: crosshair;
+    }
+    #result {
+      display: none;
+      margin-top: 20px;
+    }
+    #result img {
+      width: 300px;
+      margin-bottom: 20px;
+    }
+    video {
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>גירוד לזכייה</h2>
+<canvas id="scratchCanvas" width="300" height="150"></canvas>
+
+<div id="result">
+  <h3>🎉 זכית! 🎉</h3>
+  <img src="ticket.jpg" alt="הפרס שלך">
+  <video controls>
+    <source src="video.mp4" type="video/mp4">
+    הדפדפן שלך לא תומך בווידאו.
+  </video>
+</div>
+
+<script>
+  const canvas = document.getElementById('scratchCanvas');
+  const ctx = canvas.getContext('2d');
+  const result = document.getElementById('result');
+
+  let isDrawing = false;
+
+  ctx.fillStyle = '#c0c0c0';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.globalCompositeOperation = 'destination-out';
+
+  canvas.addEventListener('mousedown', () => isDrawing = true);
+  canvas.addEventListener('mouseup', () => {
+    isDrawing = false;
+    checkScratchPercentage();
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (!isDrawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    ctx.beginPath();
+    ctx.arc(x, y, 15, 0, 2 * Math.PI);
+    ctx.fill();
+  });
+
+  function checkScratchPercentage() {
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let cleared = 0;
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      if (imageData.data[i + 3] === 0) cleared++;
+    }
+    const percent = (cleared / (canvas.width * canvas.height)) * 100;
+    if (percent > 70) {
+      result.style.display = 'block';
+    }
+  }
+</script>
+
+</body>
+</html>

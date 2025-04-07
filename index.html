@@ -1,86 +1,270 @@
-
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html dir="rtl" lang="he">
 <head>
-  <meta charset="UTF-8">
-  <title>כרטיס גירוד</title>
-  <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      background-color: #f9f9f9;
-    }
-    #scratchCanvas {
-      margin-top: 50px;
-      border: 2px solid #888;
-      cursor: crosshair;
-    }
-    #result {
-      display: none;
-      margin-top: 20px;
-    }
-    #result img {
-      width: 300px;
-      margin-bottom: 20px;
-    }
-    video {
-      width: 300px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>דודו אהוב ליבי - כרטיס גירוד</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+            color: #333;
+        }
+        
+        .scratch-card-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border: 2px solid #ddd;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        
+        .card-header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px;
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 20px;
+        }
+        
+        .scratch-area {
+            position: relative;
+            width: 300px;
+            height: 150px;
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 3px solid #000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .prize-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #e74c3c;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .prize-image {
+            max-width: 100%;
+            max-height: 130px;
+            margin-top: 10px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+        }
+        
+        .instructions {
+            color: #333;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .reset-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        
+        .reset-button:hover {
+            background-color: #2980b9;
+        }
+    </style>
 </head>
 <body>
+    <div class="scratch-card-container">
+        <div class="card-header">
+            <h1>דודו אהוב ליבי ❤️</h1>
+        </div>
+        
+        <p class="instructions">גרד את האזור האפור כדי לחשוף את ההפתעה!</p>
+        
+        <div class="scratch-area">
+            <div class="prize-text">יום הולדת שמח</div>
+            <canvas id="scratch-canvas"></canvas>
+        </div>
+        
+        <button class="reset-button" onclick="resetCard()">נסה שוב</button>
+    </div>
 
-<h2>גירוד לזכייה</h2>
-<canvas id="scratchCanvas" width="300" height="150"></canvas>
+    <script>
+        // מערך של URL לתמונות שהועלו
+        const images = [
+            "/api/placeholder/400/320", // תמונת פלייסהולדר - נשתמש בה לדוגמה
+            "/api/placeholder/400/320"  // תמונת פלייסהולדר נוספת
+        ];
 
-<div id="result">
-  <h3>🎉 זכית! 🎉</h3>
-  <img src="ticket.jpg" alt="הפרס שלך">
-  <video controls>
-    <source src="video.mp4" type="video/mp4">
-    הדפדפן שלך לא תומך בווידאו.
-  </video>
-</div>
-
-<script>
-  const canvas = document.getElementById('scratchCanvas');
-  const ctx = canvas.getContext('2d');
-  const result = document.getElementById('result');
-
-  let isDrawing = false;
-
-  ctx.fillStyle = '#c0c0c0';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.globalCompositeOperation = 'destination-out';
-
-  canvas.addEventListener('mousedown', () => isDrawing = true);
-  canvas.addEventListener('mouseup', () => {
-    isDrawing = false;
-    checkScratchPercentage();
-  });
-
-  canvas.addEventListener('mousemove', (e) => {
-    if (!isDrawing) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    ctx.beginPath();
-    ctx.arc(x, y, 15, 0, 2 * Math.PI);
-    ctx.fill();
-  });
-
-  function checkScratchPercentage() {
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let cleared = 0;
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      if (imageData.data[i + 3] === 0) cleared++;
-    }
-    const percent = (cleared / (canvas.width * canvas.height)) * 100;
-    if (percent > 70) {
-      result.style.display = 'block';
-    }
-  }
-</script>
-
+        window.onload = function() {
+            // אתחול משתנים
+            const canvas = document.getElementById('scratch-canvas');
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+            let scratchedPercentage = 0;
+            let totalPixels = 0;
+            let scratchedPixels = 0;
+            let imageData;
+            
+            // פרסים אפשריים - רק טקסט
+            const prizes = [
+                { text: "יום הולדת שמח", image: null },
+                { text: "מתנה - כרטיס להופעה", image: null },
+                { text: "בואי נקנה רק תותים", image: null },
+                { text: "עד 120!", image: null },
+                { text: "אוהבת אותך", image: null },
+                { text: "חיבוק ענק למשפחה שלי", image: null }
+            ];
+            
+            // בחירת פרס אקראי
+            function selectRandomPrize() {
+                const randomIndex = Math.floor(Math.random() * prizes.length);
+                const prize = prizes[randomIndex];
+                document.querySelector('.prize-text').textContent = prize.text;
+            }
+            
+            // התאמת גודל הקנבס
+            function resizeCanvas() {
+                const scratchArea = document.querySelector('.scratch-area');
+                canvas.width = scratchArea.offsetWidth;
+                canvas.height = scratchArea.offsetHeight;
+                
+                // מילוי הקנבס בצבע אפור
+                ctx.fillStyle = '#444444';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // הוספת שכבת הגרפיטי
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#CCCCCC';
+                
+                for (let i = 0; i < canvas.width; i += 40) {
+                    for (let j = 0; j < canvas.height; j += 20) {
+                        ctx.fillText('גרד כאן', i + 20, j + 10);
+                    }
+                }
+                
+                // שמירת מידע על הפיקסלים
+                imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                totalPixels = canvas.width * canvas.height;
+            }
+            
+            // פונקציית איפוס
+            window.resetCard = function() {
+                resizeCanvas();
+                selectRandomPrize();
+                scratchedPercentage = 0;
+                scratchedPixels = 0;
+            };
+            
+            // ניקוי אזור קטן
+            function scratch(x, y) {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.beginPath();
+                ctx.arc(x, y, 15, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // עדכון מונה פיקסלים מגורדים
+                const currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                scratchedPixels = 0;
+                
+                for (let i = 0; i < currentImageData.data.length; i += 4) {
+                    if (currentImageData.data[i + 3] === 0) {
+                        scratchedPixels++;
+                    }
+                }
+                
+                // חישוב אחוז הגירוד
+                scratchedPercentage = (scratchedPixels / totalPixels) * 100;
+                
+                // אם גורד יותר מ-50% מהכרטיס, להציג את כל הפרס
+                if (scratchedPercentage > 50) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+            
+            // אירועי עכבר ומגע
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            
+            canvas.addEventListener('touchstart', startTouchDrawing);
+            canvas.addEventListener('touchmove', touchDraw);
+            canvas.addEventListener('touchend', stopDrawing);
+            
+            function startDrawing(e) {
+                isDrawing = true;
+                [lastX, lastY] = [e.offsetX, e.offsetY];
+                scratch(lastX, lastY);
+            }
+            
+            function draw(e) {
+                if (!isDrawing) return;
+                scratch(e.offsetX, e.offsetY);
+                [lastX, lastY] = [e.offsetX, e.offsetY];
+            }
+            
+            function startTouchDrawing(e) {
+                e.preventDefault();
+                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                [lastX, lastY] = [touch.clientX - rect.left, touch.clientY - rect.top];
+                scratch(lastX, lastY);
+            }
+            
+            function touchDraw(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                scratch(x, y);
+                [lastX, lastY] = [x, y];
+            }
+            
+            function stopDrawing() {
+                isDrawing = false;
+            }
+            
+            // אתחול הכרטיס
+            window.addEventListener('resize', resetCard);
+            resetCard();
+        };
+    </script>
 </body>
 </html>

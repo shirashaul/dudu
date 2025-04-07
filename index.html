@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>דודו אהוב ליבי - כרטיס גירוד</title>
     <style>
+        /* סגנונות בסיסיים */
+        :root {
+            --primary-color: #ff0000;
+            --secondary-color: #3498db;
+            --dark-color: #000;
+            --light-color: #fff;
+            --text-color: #333;
+            --shadow-color: rgba(0, 0, 0, 0.7);
+        }
+        
         body {
             font-family: Arial, sans-serif;
             text-align: center;
@@ -12,44 +22,54 @@
             margin: 0;
             padding: 20px;
             direction: rtl;
-            color: #333;
+            color: var(--text-color);
         }
         
+        /* סגנון הקונטיינר הראשי */
         .scratch-card-container {
             max-width: 400px;
             margin: 0 auto;
-            background: white;
+            background: var(--light-color);
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             border: 2px solid #ddd;
         }
         
-        h1 {
-            color: #2c3e50;
-            margin-top: 0;
-        }
-        
+        /* סגנון הכותרת */
         .card-header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 10px;
+            background-color: var(--secondary-color);
+            color: var(--light-color);
+            padding: 20px;
             border-radius: 10px 10px 0 0;
             margin-bottom: 20px;
+            border: 3px solid var(--dark-color);
+            position: relative;
         }
         
+        h1 {
+            color: yellow;
+            margin: 0;
+            font-size: 40px;
+            text-shadow: 3px 3px 5px var(--dark-color);
+            letter-spacing: 2px;
+            -webkit-text-stroke: 1px black;
+        }
+        
+        /* סגנון אזור הגירוד */
         .scratch-area {
             position: relative;
             width: 300px;
-            height: 150px;
+            height: 200px;
             margin: 20px auto;
             border-radius: 10px;
             overflow: hidden;
-            border: 3px solid #000;
+            border: 3px solid var(--dark-color);
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            background-color: #f9f9f9;
         }
         
-        .prize-text {
+        .prize-content {
             position: absolute;
             top: 0;
             left: 0;
@@ -58,19 +78,26 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            font-weight: bold;
-            color: #e74c3c;
+            flex-direction: column;
             padding: 10px;
             text-align: center;
+            z-index: 1;
+            box-sizing: border-box;
+        }
+        
+        .prize-text {
+            font-size: 26px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
         }
         
         .prize-image {
-            max-width: 100%;
-            max-height: 130px;
-            margin-top: 10px;
-            border-radius: 8px;
-            object-fit: contain;
+            max-width: 90%;
+            max-height: 100px;
+            border-radius: 5px;
+            display: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         
         canvas {
@@ -78,81 +105,139 @@
             top: 0;
             left: 0;
             cursor: pointer;
+            z-index: 2;
         }
         
+        /* סגנון הוראות ולחצנים */
         .instructions {
-            color: #333;
+            color: var(--text-color);
             margin: 20px 0;
             font-weight: bold;
             font-size: 18px;
         }
         
         .reset-button {
-            background-color: #3498db;
-            color: white;
+            background-color: var(--primary-color);
+            color: var(--light-color);
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
+            font-size: 18px;
+            margin-top: 15px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
         .reset-button:hover {
-            background-color: #2980b9;
+            background-color: #e74c3c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* אנימציות */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* אודיו פלייר */
+        .audio-control {
+            margin-top: 10px;
+            display: none;
+            width: 90%;
         }
     </style>
 </head>
 <body>
     <div class="scratch-card-container">
-        <div class="card-header">
+        <div class="card-header pulse">
             <h1>דודו אהוב ליבי ❤️</h1>
         </div>
         
-        <p class="instructions">גרד את האזור האפור כדי לחשוף את ההפתעה!</p>
+        <p class="instructions">גרד את האזור האפור כדי לחשוף הפתעה מיוחדת!</p>
         
         <div class="scratch-area">
-            <div class="prize-text">יום הולדת שמח</div>
+            <div class="prize-content">
+                <div id="prize-message" class="prize-text">הפתעה מיוחדת</div>
+                <img id="prize-image" class="prize-image" src="ticket.jpg" alt="כרטיס הופעה">
+                <audio id="surprise-audio" class="audio-control" controls>
+                    <source src="video.mp4" type="video/mp4">
+                    הדפדפן שלך לא תומך בתג האודיו.
+                </audio>
+            </div>
             <canvas id="scratch-canvas"></canvas>
         </div>
         
-        <button class="reset-button" onclick="resetCard()">נסה שוב</button>
+        <button class="reset-button" onclick="resetCard()">הפתעה חדשה</button>
     </div>
 
     <script>
-        // מערך של URL לתמונות שהועלו
-        const images = [
-            "/api/placeholder/400/320", // תמונת פלייסהולדר - נשתמש בה לדוגמה
-            "/api/placeholder/400/320"  // תמונת פלייסהולדר נוספת
-        ];
-
-        window.onload = function() {
-            // אתחול משתנים
+        document.addEventListener('DOMContentLoaded', () => {
+            // משתנים גלובליים
             const canvas = document.getElementById('scratch-canvas');
             const ctx = canvas.getContext('2d');
-            let isDrawing = false;
-            let lastX = 0;
-            let lastY = 0;
-            let scratchedPercentage = 0;
-            let totalPixels = 0;
-            let scratchedPixels = 0;
-            let imageData;
+            const prizeMessage = document.getElementById('prize-message');
+            const prizeImage = document.getElementById('prize-image');
+            const audioPlayer = document.getElementById('surprise-audio');
             
-            // פרסים אפשריים - רק טקסט
-            const prizes = [
-                { text: "יום הולדת שמח", image: null },
-                { text: "מתנה - כרטיס להופעה", image: null },
-                { text: "בואי נקנה רק תותים", image: null },
-                { text: "עד 120!", image: null },
-                { text: "אוהבת אותך", image: null },
-                { text: "חיבוק ענק למשפחה שלי", image: null }
+            let isDrawing = false;
+            let lastPosition = { x: 0, y: 0 };
+            let scratchStats = {
+                percentage: 0,
+                totalPixels: 0,
+                scratchedPixels: 0
+            };
+            
+            let lastSurpriseIndex = -1; // מעקב אחר ההפתעה האחרונה שהוצגה
+            
+            // רשימת הפתעות
+            const surprises = [
+                { text: "אני אוהב אותך יותר מהכל בעולם!", isSpecial: false },
+                { text: "אתה האיש הכי מדהים שאני מכירה", isSpecial: false },
+                { text: "תודה שאתה תמיד שם בשבילי", isSpecial: false },
+                { text: "מאחלת לך את כל האושר שבעולם", isSpecial: false },
+                { text: "הלב שלי שייך לך לנצח", isSpecial: false },
+                { text: "זכית בכרטיס להופעה המיוחדת!", isSpecial: true }
             ];
             
-            // בחירת פרס אקראי
-            function selectRandomPrize() {
-                const randomIndex = Math.floor(Math.random() * prizes.length);
-                const prize = prizes[randomIndex];
-                document.querySelector('.prize-text').textContent = prize.text;
+            // פונקציה לבחירת הפתעה אקראית
+            function selectRandomSurprise() {
+                let randomIndex;
+                
+                // וודא שלא תהיה חזרה על אותה הפתעה פעמיים ברצף
+                do {
+                    randomIndex = Math.floor(Math.random() * surprises.length);
+                } while (randomIndex === lastSurpriseIndex && surprises.length > 1);
+                
+                lastSurpriseIndex = randomIndex;
+                const surprise = surprises[randomIndex];
+                
+                // עדכון הטקסט
+                prizeMessage.textContent = surprise.text;
+                
+                // בדיקה אם זו ההפתעה המיוחדת
+                if (surprise.isSpecial) {
+                    prizeImage.style.display = 'block';
+                    audioPlayer.style.display = 'block';
+                    
+                    // הפעלת המוזיקה
+                    try {
+                        audioPlayer.play();
+                    } catch (e) {
+                        console.log("ההפעלה האוטומטית נכשלה. המשתמש צריך ללחוץ על הפעלה.");
+                    }
+                } else {
+                    prizeImage.style.display = 'none';
+                    audioPlayer.style.display = 'none';
+                    audioPlayer.pause();
+                }
             }
             
             // התאמת גודל הקנבס
@@ -161,110 +246,150 @@
                 canvas.width = scratchArea.offsetWidth;
                 canvas.height = scratchArea.offsetHeight;
                 
-                // מילוי הקנבס בצבע אפור
+                // מילוי הקנבס בצבע אפור כהה
                 ctx.fillStyle = '#444444';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                // הוספת שכבת הגרפיטי
-                ctx.font = 'bold 16px Arial';
+                // הוספת שכבת טקסט לגירוד
+                drawScratchText();
+                
+                // חישוב מספר פיקסלים
+                scratchStats.totalPixels = canvas.width * canvas.height;
+            }
+            
+            // פונקציה לציור טקסט "גרד כאן"
+            function drawScratchText() {
+                ctx.font = 'bold 18px Arial';
                 ctx.textAlign = 'center';
                 ctx.fillStyle = '#CCCCCC';
                 
-                for (let i = 0; i < canvas.width; i += 40) {
-                    for (let j = 0; j < canvas.height; j += 20) {
-                        ctx.fillText('גרד כאן', i + 20, j + 10);
+                for (let i = 0; i < canvas.width; i += 60) {
+                    for (let j = 0; j < canvas.height; j += 30) {
+                        ctx.fillText('גרד כאן', i + 30, j + 18);
                     }
                 }
-                
-                // שמירת מידע על הפיקסלים
-                imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                totalPixels = canvas.width * canvas.height;
             }
             
-            // פונקציית איפוס
-            window.resetCard = function() {
-                resizeCanvas();
-                selectRandomPrize();
-                scratchedPercentage = 0;
-                scratchedPixels = 0;
-            };
-            
-            // ניקוי אזור קטן
+            // פונקציית הגירוד
             function scratch(x, y) {
                 ctx.globalCompositeOperation = 'destination-out';
                 ctx.beginPath();
                 ctx.arc(x, y, 15, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // עדכון מונה פיקסלים מגורדים
-                const currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                scratchedPixels = 0;
-                
-                for (let i = 0; i < currentImageData.data.length; i += 4) {
-                    if (currentImageData.data[i + 3] === 0) {
-                        scratchedPixels++;
-                    }
-                }
-                
                 // חישוב אחוז הגירוד
-                scratchedPercentage = (scratchedPixels / totalPixels) * 100;
+                updateScratchPercentage();
                 
-                // אם גורד יותר מ-50% מהכרטיס, להציג את כל הפרס
-                if (scratchedPercentage > 50) {
+                // אם גורד יותר מ-50% מהכרטיס, חשוף את כל ההפתעה
+                if (scratchStats.percentage > 50) {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
             }
             
-            // אירועי עכבר ומגע
-            canvas.addEventListener('mousedown', startDrawing);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stopDrawing);
-            canvas.addEventListener('mouseout', stopDrawing);
+            // עדכון אחוז הגירוד
+            function updateScratchPercentage() {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                let scratchedPixels = 0;
+                
+                for (let i = 3; i < imageData.data.length; i += 4) {
+                    if (imageData.data[i] === 0) {
+                        scratchedPixels++;
+                    }
+                }
+                
+                scratchStats.scratchedPixels = scratchedPixels;
+                scratchStats.percentage = (scratchedPixels / scratchStats.totalPixels) * 100;
+            }
             
-            canvas.addEventListener('touchstart', startTouchDrawing);
-            canvas.addEventListener('touchmove', touchDraw);
-            canvas.addEventListener('touchend', stopDrawing);
+            // רישום אירועי עכבר ומגע
+            function registerEvents() {
+                // אירועי עכבר
+                canvas.addEventListener('mousedown', startDrawing);
+                canvas.addEventListener('mousemove', draw);
+                canvas.addEventListener('mouseup', stopDrawing);
+                canvas.addEventListener('mouseout', stopDrawing);
+                
+                // אירועי מגע למובייל
+                canvas.addEventListener('touchstart', startTouchDrawing);
+                canvas.addEventListener('touchmove', touchDraw);
+                canvas.addEventListener('touchend', stopDrawing);
+                canvas.addEventListener('touchcancel', stopDrawing);
+            }
             
+            // פונקציות לטיפול באירועי עכבר ומגע
             function startDrawing(e) {
                 isDrawing = true;
-                [lastX, lastY] = [e.offsetX, e.offsetY];
-                scratch(lastX, lastY);
+                const rect = canvas.getBoundingClientRect();
+                lastPosition.x = e.clientX - rect.left;
+                lastPosition.y = e.clientY - rect.top;
+                scratch(lastPosition.x, lastPosition.y);
             }
             
             function draw(e) {
                 if (!isDrawing) return;
-                scratch(e.offsetX, e.offsetY);
-                [lastX, lastY] = [e.offsetX, e.offsetY];
+                
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                scratch(x, y);
+                
+                lastPosition.x = x;
+                lastPosition.y = y;
             }
             
             function startTouchDrawing(e) {
                 e.preventDefault();
-                isDrawing = true;
-                const rect = canvas.getBoundingClientRect();
-                const touch = e.touches[0];
-                [lastX, lastY] = [touch.clientX - rect.left, touch.clientY - rect.top];
-                scratch(lastX, lastY);
+                if (e.touches.length > 0) {
+                    isDrawing = true;
+                    const rect = canvas.getBoundingClientRect();
+                    const touch = e.touches[0];
+                    
+                    lastPosition.x = touch.clientX - rect.left;
+                    lastPosition.y = touch.clientY - rect.top;
+                    
+                    scratch(lastPosition.x, lastPosition.y);
+                }
             }
             
             function touchDraw(e) {
-                if (!isDrawing) return;
                 e.preventDefault();
-                const rect = canvas.getBoundingClientRect();
-                const touch = e.touches[0];
-                const x = touch.clientX - rect.left;
-                const y = touch.clientY - rect.top;
-                scratch(x, y);
-                [lastX, lastY] = [x, y];
+                if (!isDrawing) return;
+                
+                if (e.touches.length > 0) {
+                    const rect = canvas.getBoundingClientRect();
+                    const touch = e.touches[0];
+                    
+                    const x = touch.clientX - rect.left;
+                    const y = touch.clientY - rect.top;
+                    
+                    scratch(x, y);
+                    
+                    lastPosition.x = x;
+                    lastPosition.y = y;
+                }
             }
             
             function stopDrawing() {
                 isDrawing = false;
             }
             
-            // אתחול הכרטיס
+            // פונקציית איפוס הכרטיס
+            window.resetCard = function() {
+                resizeCanvas();
+                selectRandomSurprise();
+                scratchStats.percentage = 0;
+                scratchStats.scratchedPixels = 0;
+            };
+            
+            // רישום אירוע שינוי גודל חלון
             window.addEventListener('resize', resetCard);
+            
+            // אתחול הכרטיס
+            registerEvents();
             resetCard();
-        };
+        });
     </script>
 </body>
 </html>
+                

@@ -127,6 +127,34 @@ main{min-width:0;padding-inline:28px;padding-block:24px 48px;display:grid;gap:20
 .unmark{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 12px;font-weight:700;font-size:.85rem;color:var(--muted)}
 .transcript{display:grid;gap:8px;font-size:.95rem;max-height:220px;overflow:auto}
 .transcript p{display:grid;grid-template-columns:52px 1fr;gap:8px}
+.ver{font-size:.82rem;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ver b{color:var(--ink)}
+.edited{background:var(--wait-soft);color:var(--wait);font-weight:800;font-size:.75rem;padding:1px 8px;border-radius:99px}
+textarea{width:100%;min-height:150px;font:inherit;font-size:.98rem;line-height:1.55;background:var(--surface);color:var(--ink);border:2px solid var(--live);border-radius:10px;padding:12px;resize:vertical}
+.ai-box{display:grid;gap:10px;border-top:1px dashed var(--line);padding-top:14px}
+.ai-box .lbl{font-weight:800;font-size:.9rem;display:flex;gap:6px;align-items:center}
+.ai-box .lbl i{font-style:normal;background:var(--live-soft);color:var(--live);border-radius:99px;padding:0 8px;font-size:.75rem}
+.quick{display:flex;gap:6px;flex-wrap:wrap}
+.quick button{border:1px solid var(--line);background:var(--raised);border-radius:99px;padding:5px 12px;font-weight:700;font-size:.85rem}
+.ask{display:flex;gap:8px}
+.ask input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px}
+.busy{color:var(--muted);font-weight:700}
+@media (prefers-reduced-motion:no-preference){.busy{animation:pl 1.2s infinite}}
+details.hist summary{cursor:pointer;font-weight:800;font-size:.9rem}
+.hlist{display:grid;gap:6px;margin-top:10px}
+.hv{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:.85rem}
+.hv.cur{border-color:var(--ok);background:var(--ok-soft)}
+.hv .tx{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46ch}
+.warn{font-size:.8rem;color:var(--wait);font-weight:800}
+.thread{display:grid;gap:10px}
+.cm{display:grid;grid-template-columns:34px 1fr;gap:10px}
+.av{width:34px;height:34px;border-radius:50%;background:var(--chip);display:grid;place-items:center;font-weight:800;font-size:.85rem}
+.cm .h{font-size:.82rem;color:var(--muted)}
+.cm .h b{color:var(--ink)}
+.cm.sys .av{background:var(--live-soft);color:var(--live)}
+.cm.sys p{color:var(--muted);font-size:.9rem}
+.imgedit{display:grid;gap:6px}
+.imgedit input{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;width:100%}
 .transcript .t{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.85rem}
 
 /* dashboard */
@@ -268,7 +296,59 @@ const P=[
   up:{ig:{by:'יוסי',at:'07:41'},fb:{by:'יוסי',at:'07:44'},x:{by:'נועה',at:'07:58'}}}
 ];
 
-const S={view:'list',filter:'all',open:null,tab:null,me:'יוסי'};
+const S={view:'list',filter:'all',open:null,tab:null,me:'יוסי',editing:false,busy:false,imgEdit:false};
+
+// Pre-written alternates so the mock "rewrite" returns believable text
+const ALT={
+  142:{ig:['שימו לב 🚨 ההרכב של "גלים" בחוץ!\nוערב הסגירה? לא תאמינו מי סוגר 😱\nתייגו את החבר/ה שחייבים לבוא איתכם 👇',
+           'הקיץ שלכם מתוכנן 🌊\n"גלים" חשף את ההרכב המלא, 14 הופעות ב-3 ערבים, וסגירה שתדברו עליה עוד שנה 🔥\n\n#גלים #פסטיבל'],
+       fb:['ההרכב של פסטיבל "גלים" פורסם הבוקר, והוא החזק ביותר שהיה לפסטיבל עד היום.\nכרטיסים ביום חמישי ב-10:00. שווה לכוון שעון.'],
+       x:['"גלים" חשף את ההרכב. ערב הסגירה = הפתעת הקיץ 🌊🔥']},
+  141:{tt:['היא כמעט נשברה מול המצלמה 🥹 "הסדרה הזאת שינתה לי את החיים"'],
+       ig:['הרגע הכי אמיתי מהשטיח האדום 🥹\n"הסדרה הזאת שינתה לי את החיים"\nותקשיבו טוב בסוף, יש רמז לעונה 2 👀']},
+  139:{ig:['זה קורה 🌙 "חוף הלילה" חוזרת בדצמבר!\nמי עושה בינג\' חוזר על עונה 1 לקראת? 🙋']}
+};
+const LOG=[
+  {at:'10:58',by:'אבי',pid:142,text:'הגיב/ה על פסטיבל "גלים"'},
+  {at:'10:56',by:'מיכל',pid:142,text:'ערכה את הטקסט לפייסבוק: פסטיבל "גלים"'}
+];
+const COMMENTS={
+  142:[{by:'Claude',at:'10:49',sys:true,text:'הכנתי טיוטה מהידיעה ב"פופ-ניוז". את ההפתעה בערב הסגירה עוד לא אישרו רשמית, ולכן לא כתבתי מי זה.'},
+       {by:'מיכל',at:'10:56',text:'קיצרתי קצת את הפייסבוק. אחרי זה אפשר להעלות.'},
+       {by:'אבי',at:'10:58',text:'באינסטגרם הייתי שם עוד כותרת יותר מסקרנת. מישהו מנסה?'}]
+};
+function hist(p,k){
+  p.hist=p.hist||{};
+  if(!p.hist[k]){
+    const v=[{text:p.tx[k],by:'Claude',at:hm(toMin(p.at)+1),note:'טיוטה ראשונה'}];
+    if(p.id===142&&k==='fb'){v[0].text=p.tx.fb+'\nאל תפספסו! 🎟️';v.push({text:p.tx.fb,by:'מיכל',at:'10:56',note:'עריכה ידנית'})}
+    p.hist[k]=v;
+  }
+  return p.hist[k];
+}
+function addVersion(p,k,text,note){
+  const h=hist(p,k);clock++;
+  h.push({text,by:S.me,at:hm(clock),note});
+  p.tx[k]=text;
+  LOG.unshift({at:hm(clock),by:S.me,pid:p.id,text:`${note==='עריכה ידנית'?'ערך/ה':'שכתב/ה עם Claude'} את הטקסט ל${netName(k)}: ${p.hl}`});
+}
+const stripEmoji=t=>t.replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu,'').replace(/[ \t]{2,}/g,' ').replace(/ +\n/g,'\n').trim();
+function rewrite(p,k,mode,instr){
+  const t=p.tx[k];
+  const shorter=()=>{const ls=t.split('\n').filter(Boolean);const tags=ls.find(l=>l.trim().startsWith('#'));return ls[0]+(tags&&tags!==ls[0]?'\n\n'+tags:'')};
+  const formal=()=>stripEmoji(t).split('\n').filter(l=>!l.trim().startsWith('#')).join('\n').replace(/!/g,'.').trim();
+  const other=()=>{const a=(ALT[p.id]||{})[k]||[];const used=hist(p,k).map(v=>v.text);const f=a.find(x=>!used.includes(x));return f||(t.includes('?')?shorter():t+'\nמה דעתכם? 👇')};
+  if(mode==='short')return shorter();
+  if(mode==='noemoji')return stripEmoji(t);
+  if(mode==='formal')return formal();
+  if(mode==='other')return other();
+  const s=instr||'';
+  if(/קצר/.test(s))return shorter();
+  if(/אימוג/.test(s))return stripEmoji(t);
+  if(/רשמי|רציני/.test(s))return formal();
+  return other();
+}
+const MODES={short:'קצר יותר',noemoji:'בלי אימוג\'ים',formal:'רשמי יותר',other:'גרסה אחרת'};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const netName=id=>NETS.find(n=>n.id===id).name;
@@ -282,12 +362,12 @@ const ST={wait:['p-wait','ממתינה להעלאה'],part:['p-part','עלתה �
 
 function tpl(p,big){
   if(p.kind==='proc')return `<div class="tpl proc"><p class="hl">Claude מתמלל ומכין כתוביות<br>כ-2 דקות</p></div>`;
-  if(p.kind==='quote')return `<div class="tpl quote" style="--h:${p.h}"><span class="qm">"</span><p class="hl">${esc(p.hl)}</p><div class="foot"><span>${esc(p.who)}</span><span>שם הדף</span></div></div>`;
+  if(p.kind==='quote')return `<div class="tpl quote" style="--h:${p.h}"><span class="qm">"</span><p class="hl">${esc(p.img||p.hl)}</p><div class="foot"><span>${esc(p.who)}</span><span>שם הדף</span></div></div>`;
   if(p.kind==='video'){
     const words=p.caps.map((w,i)=>`<i data-w="${i}">${esc(w)}</i>`).join(' ');
     return `<div class="tpl ${big?'v':'v'}" style="--h:${p.h}"><span class="rib">ראיון</span>${big?'':'<div class="play" aria-hidden="true"><span>▶</span></div>'}<p class="caps">${words}</p></div>`;
   }
-  return `<div class="tpl" style="--h:${p.h}"><span class="rib">חדשות חמות</span><p class="hl">${esc(p.hl)}</p><div class="foot"><span>${esc(p.cat)}</span><span>שם הדף</span></div></div>`;
+  return `<div class="tpl" style="--h:${p.h}"><span class="rib">חדשות חמות</span><p class="hl">${esc(p.img||p.hl)}</p><div class="foot"><span>${esc(p.cat)}</span><span>שם הדף</span></div></div>`;
 }
 
 function nav(){
@@ -322,7 +402,7 @@ function renderList(){
     const [c,l]=ST[status(p)];
     return `<button class="pk" data-open="${p.id}"><div class="thumb">${tpl(p,false)}</div>
       <div class="body"><div class="meta"><span>#${p.id} · ${esc(p.cat)}</span><span class="num">${p.at}</span></div>
-      <h3>${esc(p.hl)}</h3><span class="pill ${c}">${l}</span>
+      <h3>${esc(p.hl)}</h3><div class="nets"><span class="pill ${c}">${l}</span>${(COMMENTS[p.id]||[]).length?`<span class="n">💬 ${(COMMENTS[p.id]||[]).length}</span>`:''}${p.hist&&Object.values(p.hist).some(h=>h.length>1)?'<span class="edited">נערך</span>':''}</div>
       <div class="nets">${p.targets.map(t=>`<span class="n ${p.up[t]?'on':''}">${netName(t)}${p.up[t]?' ✓':''}</span>`).join('')}</div></div></button>`;
   }).join('')||'<p class="sub">אין חבילות בסינון הזה.</p>'}</div>`;
 }
@@ -339,22 +419,48 @@ function renderDetail(){
   <div class="trail">${trail}</div>
   <div class="detail">
     <div class="media">${tpl(p,true)}
-      ${p.kind==='proc'?'':`<div class="btnrow"><button class="btn primary" data-dl>${p.kind==='video'?'הורדת הסרטון':'הורדת התמונה'}</button><button class="btn" data-dl>גרסה אחרת</button></div>`}
+      ${p.kind==='proc'?'':`<div class="btnrow"><button class="btn primary" data-dl>${p.kind==='video'?'הורדת הסרטון':'הורדת התמונה'}</button>${p.kind==='video'?'':`<button class="btn" data-imgedit>✎ שינוי הכותרת בתמונה</button>`}</div>
+      ${S.imgEdit?`<div class="imgedit"><label for="imgHl" class="field">כותרת חדשה לתמונה</label><input id="imgHl" value="${esc(p.img||p.hl)}"><div class="btnrow"><button class="btn primary" data-imgsave>עדכון התמונה</button><button class="btn" data-imgcancel>ביטול</button></div></div>`:''}`}
     </div>
     <div style="display:grid;gap:16px;min-width:0">
-      ${p.kind==='proc'?`<div class="panel"><h2>בהכנה</h2><p class="sub">Claude מתמלל את הסרטון ומכין טקסטים לכל רשת. החבילה תופיע כאן ותישלח התראה בוואטסאפ כשתהיה מוכנה.</p></div>`:`
-      <div class="panel"><h2>טקסט לכל רשת</h2>
-        <div class="tabs" role="tablist">${Object.keys(p.tx).map(k=>`<button role="tab" data-tab="${k}" aria-selected="${S.tab===k}">${netName(k)}</button>`).join('')}</div>
-        <div class="copytext" id="copytext">${esc(p.tx[S.tab])}</div>
-        <div class="btnrow"><button class="btn primary" data-copy>העתקת הטקסט</button></div>
-      </div>
+      ${p.kind==='proc'?`<div class="panel"><h2>בהכנה</h2><p class="sub">Claude מתמלל את הסרטון ומכין טקסטים לכל רשת. החבילה תופיע כאן ותישלח התראה בוואטסאפ כשתהיה מוכנה.</p></div>`:textPanel(p)+`
       <div class="panel"><h2>סימון העלאה</h2><p class="sub">אחרי שהעלית לרשת, לחץ/י על הכפתור שלה. נרשם בשם ${esc(S.me)}.</p>
-        <div class="rows">${p.targets.map(t=>{const u=p.up[t];return `<div class="row ${u?'done':''}"><div><div class="nm">${netName(t)}</div><div class="who">${u?`✓ עלה · ${esc(u.by)} · <span class="num">${u.at}</span>`:'עוד לא עלה'}</div></div>
+        <div class="rows">${p.targets.map(t=>{const u=p.up[t];const late=u&&p.hist&&p.hist[t]&&toMin(p.hist[t][p.hist[t].length-1].at)>toMin(u.at);return `<div class="row ${u?'done':''}"><div><div class="nm">${netName(t)}</div><div class="who">${u?`✓ עלה · ${esc(u.by)} · <span class="num">${u.at}</span>`:'עוד לא עלה'}</div>${late?'<div class="warn">⚠ הטקסט נערך אחרי ההעלאה. כדאי לעדכן גם ברשת</div>':''}</div>
           ${u?`<button class="unmark" data-unmark="${t}">ביטול</button>`:`<button class="mark" data-mark="${t}">✓ סמנתי שעלה</button>`}</div>`}).join('')}</div>
       </div>
+      ${commentsPanel(p)}
       ${p.tr?`<div class="panel"><h2>תמלול</h2><div class="transcript">${p.tr.map(([t,s])=>`<p><span class="t">${t}</span><span>${esc(s)}</span></p>`).join('')}</div>
         <div class="btnrow"><button class="btn" data-copytr>העתקת התמלול</button></div></div>`:''}`}
     </div>
+  </div>`;
+}
+
+function textPanel(p){
+  const k=S.tab, h=hist(p,k), cur=h[h.length-1];
+  const body=S.busy?`<div class="copytext busy">Claude כותב גרסה חדשה...</div>`
+    :S.editing?`<label for="editArea" class="sub">עריכה ידנית. כל הצוות יראה את הגרסה אחרי השמירה.</label><textarea id="editArea">${esc(p.tx[k])}</textarea>
+      <div class="btnrow"><button class="btn primary" data-save>שמירה</button><button class="btn" data-cancel>ביטול</button></div>`
+    :`<div class="copytext" id="copytext">${esc(p.tx[k])}</div>
+      <div class="btnrow"><button class="btn primary" data-copy>העתקת הטקסט</button><button class="btn" data-edit>✎ עריכה ידנית</button></div>`;
+  return `<div class="panel"><h2>טקסט לכל רשת</h2>
+    <div class="tabs" role="tablist">${Object.keys(p.tx).map(t=>`<button role="tab" data-tab="${t}" aria-selected="${k===t}">${netName(t)}</button>`).join('')}</div>
+    <div class="ver"><span>גרסה ${h.length}</span>·<b>${esc(cur.by)}</b>·<span class="num">${cur.at}</span>·<span>${esc(cur.note)}</span>${h.length>1?'<span class="edited">נערך</span>':''}</div>
+    ${body}
+    ${S.editing||S.busy?'':`<div class="ai-box"><span class="lbl">לא אהבת? Claude ישכתב <i>כל הצוות רואה</i></span>
+      <div class="quick">${Object.entries(MODES).map(([m,l])=>`<button data-rw="${m}">${l}</button>`).join('')}</div>
+      <form class="ask" data-askform><input id="askIn" placeholder="או כתבו מה לשנות, למשל: תפתח בשאלה"><button class="btn primary" type="submit">שכתוב</button></form></div>`}
+    <details class="hist"><summary>היסטוריית גרסאות (${h.length})</summary>
+      <div class="hlist">${h.map((v,i)=>({v,i})).reverse().map(({v,i})=>`<div class="hv ${i===h.length-1?'cur':''}"><div><div><b>גרסה ${i+1}</b> · ${esc(v.by)} · <span class="num">${v.at}</span> · ${esc(v.note)}</div><div class="tx">${esc(v.text.split('\n')[0])}</div></div>
+        ${i===h.length-1?'<span class="pill p-done">נוכחית</span>':`<button class="unmark" data-restore="${i}">שחזור</button>`}</div>`).join('')}</div>
+    </details>
+  </div>`;
+}
+
+function commentsPanel(p){
+  const cs=COMMENTS[p.id]||[];
+  return `<div class="panel"><h2>הערות לצוות</h2>
+    <div class="thread">${cs.length?cs.map(c=>`<div class="cm ${c.sys?'sys':''}"><span class="av">${c.sys?'AI':esc(c.by[0])}</span><div><div class="h"><b>${esc(c.by)}</b> · <span class="num">${c.at}</span></div><p>${esc(c.text)}</p></div></div>`).join(''):'<p class="sub">אין הערות עדיין.</p>'}</div>
+    <form class="ask" data-cmform><input id="cmIn" placeholder="כתבו הערה לצוות..."><button class="btn primary" type="submit">שליחה</button></form>
   </div>`;
 }
 
@@ -390,7 +496,7 @@ function renderDash(){
       <tbody>${perPerson.map(x=>`<tr><td><b>${x.t.name}</b></td><td>${x.t.role}</td><td class="num">${x.v}</td><td class="num">${x.last?x.last.at+' · '+netName(x.last.n):'·'}</td></tr>`).join('')}</tbody></table></div>
     </div>
     <div class="panel"><h2>פעילות אחרונה</h2>
-      <div class="feed">${ups.map(u=>`<div><span class="t num">${u.at}</span><span><b>${esc(u.by)}</b> העלה/תה ל${netName(u.n)}: ${esc(u.p.hl)}</span></div>`).join('')}</div>
+      <div class="feed">${[...ups.map(u=>({at:u.at,by:u.by,text:`העלה/תה ל${netName(u.n)}: ${u.p.hl}`})),...LOG].sort((a,b)=>toMin(b.at)-toMin(a.at)).map(u=>`<div><span class="t num">${u.at}</span><span><b>${esc(u.by)}</b> ${esc(u.text)}</span></div>`).join('')}</div>
     </div>
   </div>`;
 }
@@ -452,20 +558,39 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.view){S.view=b.dataset.view;S.open=null;render();scrollTo(0,0);return}
   if(b.dataset.filter){S.filter=b.dataset.filter;render();return}
-  if(b.dataset.open){S.view='list';S.open=+b.dataset.open;S.tab=null;render();scrollTo(0,0);return}
+  if(b.dataset.open){S.view='list';S.open=+b.dataset.open;S.tab=null;S.editing=false;S.imgEdit=false;render();scrollTo(0,0);return}
   if('back' in b.dataset){S.open=null;render();return}
-  if(b.dataset.tab){S.tab=b.dataset.tab;render();return}
+  if(b.dataset.tab){S.tab=b.dataset.tab;S.editing=false;render();return}
   const p=P.find(x=>x.id===S.open);
   if('copy' in b.dataset&&p){copy(p.tx[S.tab]);return}
   if('copytr' in b.dataset&&p){copy(p.tr.map(r=>r[0]+' '+r[1]).join('\n'));return}
+  if('edit' in b.dataset){S.editing=true;render();const t=$('#editArea');if(t)t.focus();return}
+  if('cancel' in b.dataset){S.editing=false;render();return}
+  if('save' in b.dataset&&p){const v=$('#editArea').value.trim();S.editing=false;if(v&&v!==p.tx[S.tab]){addVersion(p,S.tab,v,'עריכה ידנית');render();toast('נשמר. כל הצוות רואה את הגרסה החדשה')}else render();return}
+  if(b.dataset.rw&&p){runRewrite(p,b.dataset.rw,'');return}
+  if(b.dataset.restore&&p){const v=hist(p,S.tab)[+b.dataset.restore];addVersion(p,S.tab,v.text,'שחזור גרסה '+(+b.dataset.restore+1));render();toast('הגרסה שוחזרה');return}
+  if('imgedit' in b.dataset){S.imgEdit=!S.imgEdit;render();return}
+  if('imgcancel' in b.dataset){S.imgEdit=false;render();return}
+  if('imgsave' in b.dataset&&p){const v=$('#imgHl').value.trim();S.imgEdit=false;if(v){p.img=v;clock++;LOG.unshift({at:hm(clock),by:S.me,pid:p.id,text:'שינה/תה את הכותרת בתמונה: '+p.hl})}render();toast('התמונה עודכנה');return}
   if('dl' in b.dataset){toast('במערכת האמיתית הקובץ יורד לטלפון או למחשב');return}
   if(b.dataset.mark&&p){clock++;p.up[b.dataset.mark]={by:S.me,at:hm(clock)};render();toast(`נרשם ✓ ${netName(b.dataset.mark)} · ${S.me} · ${hm(clock)}`);return}
   if(b.dataset.unmark&&p){delete p.up[b.dataset.unmark];render();toast('הסימון בוטל');return}
+});
+function runRewrite(p,mode,instr){
+  const k=S.tab;S.busy=true;render();
+  setTimeout(()=>{S.busy=false;addVersion(p,k,rewrite(p,k,mode,instr),mode?MODES[mode]:'בקשה: '+instr);if(S.open===p.id)render();toast('Claude כתב גרסה חדשה. אפשר לשחזר את הקודמת מההיסטוריה')},1100);
+}
+document.addEventListener('submit',e=>{
+  e.preventDefault();
+  const p=P.find(x=>x.id===S.open);if(!p)return;
+  if('askform' in e.target.dataset){const v=$('#askIn').value.trim();if(v)runRewrite(p,null,v);return}
+  if('cmform' in e.target.dataset){const v=$('#cmIn').value.trim();if(!v)return;clock++;(COMMENTS[p.id]=COMMENTS[p.id]||[]).push({by:S.me,at:hm(clock),text:v});LOG.unshift({at:hm(clock),by:S.me,pid:p.id,text:'הגיב/ה על '+p.hl});render();toast('ההערה נשלחה לצוות')}
 });
 document.addEventListener('change',e=>{
   if(e.target.dataset.src!==undefined){const s=SOURCES[+e.target.dataset.src];s.on=e.target.checked;toast(s.on?`${s.name} נכלל בסריקה`:`${s.name} הושבת`)}
 });
 
+hist(P[0],'fb');
 $('#meSel').innerHTML=TEAM.map(t=>`<option ${t.name===S.me?'selected':''}>${t.name}</option>`).join('');
 $('#meSel').addEventListener('change',e=>setMe(e.target.value));
 render();

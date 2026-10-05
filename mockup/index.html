@@ -1,0 +1,473 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"></head><body><title>הדסק</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karantina:wght@700&family=Secular+One&family=Assistant:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: newsroom desk app — side rail (desktop) / bottom tabs (phone), main column of package cards; detail view replaces list */
+:root{
+  --bg:#f4f4f1; --surface:#ffffff; --raised:#fafaf8; --ink:#171926; --muted:#5f6273; --line:#e2e1dc; --chip:#eeede8;
+  --live:#e0204c; --live-soft:#fde7ec; --ok:#12805a; --ok-soft:#e1f3eb; --wait:#9a6500; --wait-soft:#fbf0d6;
+  --rail:#171926; --rail-ink:#f4f4f1; --rail-muted:#9fa2b4;
+  --display:"Secular One","Assistant",system-ui,sans-serif;
+  --poster:"Karantina","Secular One","Assistant",sans-serif;
+  --body:"Assistant",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111219; --surface:#1a1c27; --raised:#20232f; --ink:#f1f0ec; --muted:#a2a5b6; --line:#2b2e3d; --chip:#262938;
+  --live:#ff4b72; --live-soft:#3a1722; --ok:#3fcf8e; --ok-soft:#12301f; --wait:#eab54d; --wait-soft:#33280e;
+  --rail:#0b0c12; --rail-ink:#f1f0ec; --rail-muted:#8c8fa1; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111219; --surface:#1a1c27; --raised:#20232f; --ink:#f1f0ec; --muted:#a2a5b6; --line:#2b2e3d; --chip:#262938;
+  --live:#ff4b72; --live-soft:#3a1722; --ok:#3fcf8e; --ok-soft:#12301f; --wait:#eab54d; --wait-soft:#33280e;
+  --rail:#0b0c12; --rail-ink:#f1f0ec; --rail-muted:#8c8fa1; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;direction:rtl;margin:0}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--live);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.2;text-wrap:balance}
+p{margin:0}
+.num{font-variant-numeric:tabular-nums}
+
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100%}
+.rail{background:var(--rail);color:var(--rail-ink);padding:22px 16px;display:flex;flex-direction:column;gap:26px;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:1.5rem}
+.brand .on{width:12px;height:12px;border-radius:50%;background:var(--live);box-shadow:0 0 0 4px color-mix(in srgb,var(--live) 30%,transparent)}
+.nav{display:grid;gap:4px}
+.nav button{background:none;border:0;color:var(--rail-muted);text-align:start;padding:10px 12px;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700}
+.nav button[aria-current="page"]{background:color-mix(in srgb,var(--rail-ink) 10%,transparent);color:var(--rail-ink)}
+.badge{background:var(--live);color:#fff;border-radius:99px;font-size:.75rem;padding:0 8px;min-width:22px;text-align:center;font-weight:800}
+.me{margin-top:auto;display:grid;gap:6px;font-size:.85rem;color:var(--rail-muted)}
+.me select{background:color-mix(in srgb,var(--rail-ink) 10%,transparent);color:var(--rail-ink);border:0;border-radius:8px;padding:8px}
+.me select option{color:#171926;background:#fff}
+
+main{min-width:0;padding-inline:28px;padding-block:24px 48px;display:grid;gap:20px;align-content:start;max-width:1120px;width:100%}
+.demo{background:var(--wait-soft);color:var(--wait);font-size:.85rem;font-weight:700;padding:8px 14px;border-radius:10px}
+.top{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.top h1{font-size:clamp(1.6rem,3vw,2.1rem)}
+.top .sub{color:var(--muted);font-size:.95rem}
+
+/* pipeline strip */
+.pipe{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:.85rem;color:var(--muted)}
+.pipe .st{background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:4px 12px;display:inline-flex;gap:6px;align-items:center}
+.pipe .st b{color:var(--ink)}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+@media (prefers-reduced-motion:no-preference){.pulse{animation:pl 1.6s infinite}}
+@keyframes pl{50%{opacity:.25}}
+
+/* filters */
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filters button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 14px;font-weight:700;font-size:.9rem}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* package list */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.pk{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:grid;text-align:start;padding:0}
+.pk:hover{border-color:var(--muted)}
+.pk .body{padding:12px 14px 14px;display:grid;gap:8px}
+.pk .meta{display:flex;justify-content:space-between;gap:8px;font-size:.8rem;color:var(--muted)}
+.pk h3{font-family:var(--body);font-weight:800;font-size:1rem;line-height:1.35}
+.nets{display:flex;flex-wrap:wrap;gap:4px}
+.n{font-size:.72rem;font-weight:800;padding:2px 8px;border-radius:99px;background:var(--chip);color:var(--muted)}
+.n.on{background:var(--ok-soft);color:var(--ok)}
+.pill{font-size:.75rem;font-weight:800;padding:2px 9px;border-radius:99px;width:fit-content}
+.p-wait{background:var(--live-soft);color:var(--live)}
+.p-part{background:var(--wait-soft);color:var(--wait)}
+.p-done{background:var(--ok-soft);color:var(--ok)}
+.p-proc{background:var(--chip);color:var(--muted)}
+
+/* designed templates (fixed brand look, intentionally theme-independent: they are the images that get posted) */
+.tpl{position:relative;aspect-ratio:1/1;max-width:100%;overflow:hidden;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;padding:7%;
+  background:radial-gradient(120% 90% at 80% 10%,hsl(var(--h) 80% 55%) 0%,hsl(calc(var(--h) + 30) 70% 28%) 55%,#0d0e16 100%)}
+.tpl.v{aspect-ratio:9/16}
+.tpl .rib{position:absolute;top:7%;right:7%;background:#e0204c;color:#fff;font-family:var(--display);font-size:clamp(.6rem,2.6cqw,1rem);padding:.2em .7em;border-radius:4px}
+.tpl{container-type:inline-size}
+.tpl .hl{font-family:var(--poster);font-weight:700;font-size:13cqw;line-height:.92;text-wrap:balance;text-shadow:0 2px 18px rgba(0,0,0,.35)}
+.tpl .foot{margin-top:5cqw;display:flex;justify-content:space-between;align-items:center;font-size:3.6cqw;font-weight:800;opacity:.9;border-top:2px solid rgba(255,255,255,.5);padding-top:3cqw}
+.tpl.quote{background:linear-gradient(160deg,#fff4d6 0%,#ffd9e2 100%);color:#171926;justify-content:center}
+.tpl.quote .qm{font-family:var(--display);font-size:30cqw;line-height:.6;color:#e0204c}
+.tpl.quote .hl{text-shadow:none;font-size:11cqw}
+.tpl.quote .foot{border-color:rgba(23,25,38,.35)}
+.tpl.proc{background:repeating-linear-gradient(135deg,var(--chip) 0 12px,var(--raised) 12px 24px);color:var(--muted);justify-content:center;align-items:center;text-align:center}
+.tpl.proc .hl{font-family:var(--body);font-weight:800;font-size:5cqw;text-shadow:none}
+.play{position:absolute;inset:0;display:grid;place-items:center}
+.play span{width:18cqw;height:18cqw;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;font-size:7cqw}
+.caps{font-family:var(--body);font-weight:800;font-size:7cqw;line-height:1.3;text-align:center;margin-bottom:12cqw;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+.caps i{font-style:normal;padding:0 .12em;border-radius:.2em}
+.caps i.hi{background:#ffd400;color:#171926;text-shadow:none}
+.pk .thumb .tpl.v{aspect-ratio:1/1}
+.pk .thumb .caps{font-size:6cqw;margin-bottom:4cqw}
+
+/* detail */
+.back{background:none;border:0;color:var(--muted);font-weight:700;padding:0;width:fit-content}
+.detail{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:24px;align-items:start}
+.media{display:grid;gap:10px}
+.media .tpl{border-radius:14px}
+.media .tpl.v{max-width:300px;width:100%;justify-self:center}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 14px;font-weight:700;font-size:.9rem}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:14px;min-width:0}
+.panel h2{font-size:1.2rem}
+.trail{display:flex;gap:6px;flex-wrap:wrap;font-size:.8rem}
+.trail span{background:var(--chip);border-radius:99px;padding:2px 10px;color:var(--muted)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:8px 12px;font-weight:700;color:var(--muted)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--live)}
+.copytext{white-space:pre-wrap;background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:.98rem;min-height:120px}
+.rows{display:grid;gap:8px}
+.row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.row.done{background:var(--ok-soft);border-color:transparent}
+.row .nm{font-weight:800}
+.row .who{font-size:.85rem;color:var(--muted)}
+.row.done .who{color:var(--ok);font-weight:700}
+.mark{border:0;border-radius:10px;padding:8px 14px;font-weight:800;background:var(--live);color:#fff}
+.unmark{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 12px;font-weight:700;font-size:.85rem;color:var(--muted)}
+.transcript{display:grid;gap:8px;font-size:.95rem;max-height:220px;overflow:auto}
+.transcript p{display:grid;grid-template-columns:52px 1fr;gap:8px}
+.transcript .t{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.85rem}
+
+/* dashboard */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:2px}
+.kpi .v{font-family:var(--display);font-size:2.2rem;line-height:1.1}
+.kpi .l{color:var(--muted);font-size:.9rem;font-weight:700}
+.kpi.alert .v{color:var(--live)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.bars{display:grid;gap:10px}
+.bar{display:grid;grid-template-columns:90px 1fr 32px;gap:10px;align-items:center;font-size:.9rem}
+.bar .track{height:14px;background:var(--chip);border-radius:99px;overflow:hidden}
+.bar .fill{height:100%;background:var(--ok);border-radius:99px}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:start;padding:8px 6px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:700;font-size:.82rem}
+.feed{display:grid;gap:8px;font-size:.9rem;max-height:280px;overflow:auto}
+.feed div{display:grid;grid-template-columns:48px 1fr;gap:8px}
+.feed .t{color:var(--muted)}
+.stuck{display:grid;gap:8px}
+.stuck button{display:grid;grid-template-columns:1fr auto;gap:8px;text-align:start;background:var(--live-soft);border:0;border-radius:10px;padding:10px 12px}
+.stuck b{font-weight:800}
+.stuck span{color:var(--live);font-weight:800;font-size:.85rem}
+
+/* settings */
+.list{display:grid;gap:8px}
+.item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.item .s{font-size:.85rem;color:var(--muted)}
+.sw{appearance:none;width:44px;height:26px;border-radius:99px;background:var(--chip);border:1px solid var(--line);position:relative;cursor:pointer;margin:0}
+.sw::after{content:"";position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.25);transition:right .15s}
+.sw:checked{background:var(--ok);border-color:var(--ok)}
+.sw:checked::after{right:20px}
+.tpls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tpls figure{margin:0;display:grid;gap:6px;font-size:.85rem;font-weight:700;text-align:center}
+.tpls .tpl{border-radius:10px}
+.voice{margin:0;padding-inline-start:20px;display:grid;gap:4px}
+.field{display:grid;gap:4px;font-size:.9rem;font-weight:700}
+.field select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:12px;font-weight:700;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:20;max-width:calc(100% - 32px)}
+
+@media (max-width:900px){
+  .detail{grid-template-columns:1fr}
+  .two{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr 1fr}
+}
+@media (max-width:760px){
+  .app{grid-template-columns:1fr}
+  .rail{position:fixed;bottom:0;top:auto;inset-inline:0;height:auto;flex-direction:row;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:10;gap:0}
+  .brand,.me{display:none}
+  .nav{grid-auto-flow:column;grid-auto-columns:1fr;width:100%}
+  .nav button{justify-content:center;flex-direction:column;gap:2px;font-size:.85rem;padding:8px 4px}
+  main{padding-inline:16px;padding-block:16px 96px}
+  .mobile-me{display:flex!important}
+  .toast{bottom:84px}
+  .tpls{grid-template-columns:repeat(3,1fr)}
+}
+.mobile-me{display:none;align-items:center;gap:8px;font-size:.85rem;color:var(--muted)}
+.mobile-me select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px}
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand"><span class="on" aria-hidden="true"></span>הדסק</div>
+    <nav class="nav" aria-label="ניווט">
+      <button data-view="list"><span>חבילות</span><span class="badge num" id="waitBadge">0</span></button>
+      <button data-view="dash"><span>לוח מנהלת</span></button>
+      <button data-view="settings"><span>הגדרות</span></button>
+    </nav>
+    <label class="me" for="meSel">נכנסת/ת בתור
+      <select id="meSel"></select>
+    </label>
+  </aside>
+  <main id="main"></main>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+const NETS=[{id:'ig',name:'אינסטגרם'},{id:'fb',name:'פייסבוק'},{id:'tt',name:'טיקטוק'},{id:'x',name:'X'},{id:'yt',name:'יוטיוב'}];
+const TEAM=[
+  {name:'מיכל',role:'מנהלת'},{name:'אבי',role:'עורך'},{name:'תום',role:'כותב'},
+  {name:'דנה',role:'מעצבת'},{name:'יוסי',role:'מעלה תוכן'},{name:'נועה',role:'מעלה תוכן'}];
+const SOURCES=[
+  {name:'פופ-ניוז',s:'בידור ומוזיקה · 34 ידיעות היום',on:true},
+  {name:'במה ומסך',s:'טלוויזיה וקולנוע · 21 ידיעות היום',on:true},
+  {name:'חדשות הלילה',s:'רכילות · 17 ידיעות היום',on:true},
+  {name:'ערוץ יוטיוב: קליפים חדשים',s:'סרטונים · 4 היום',on:true},
+  {name:'מגזין סטייל',s:'אופנה · מושבת',on:false}];
+
+let clock=11*60+5; // 11:05, demo clock
+const hm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+const toMin=s=>{const [h,m]=s.split(':').map(Number);return h*60+m};
+
+const P=[
+ {id:142,kind:'hot',h:350,cat:'מוזיקה',src:'פופ-ניוז',at:'10:48',targets:['ig','fb','x'],
+  hl:'פסטיבל "גלים" חושף את ההרכב המלא',
+  tx:{ig:'הם חוזרים 🌊🔥\nפסטיבל "גלים" חשף סוף סוף את ההרכב המלא, ויש הפתעה ענקית בערב הסגירה 👀\nמי אתם הכי מחכים לראות? תייגו את מי שבא איתכם 👇\n\n#גלים #פסטיבל #קיץ',
+      fb:'זה רשמי: פסטיבל "גלים" פרסם הבוקר את ההרכב המלא לקיץ.\nשלושה ערבים, 14 הופעות, ובערב הסגירה מחכה הופעה שאף אחד לא ציפה לה.\nהכרטיסים יוצאים למכירה ביום חמישי ב-10:00. מי בא? 🎶',
+      x:'ההרכב המלא של פסטיבל "גלים" פורסם, וערב הסגירה הוא ההפתעה של הקיץ 🌊'},
+  up:{}},
+ {id:141,kind:'video',h:280,cat:'טלוויזיה',src:'צולם ע"י הצוות',at:'10:20',targets:['tt','ig','yt'],
+  hl:'ראיון מהשטיח האדום: "הסדרה הזאת שינתה לי את החיים"',
+  caps:['הסדרה','הזאת','שינתה','לי','את','החיים'],
+  tr:[['00:02','אני עדיין לא מעכלת שאנחנו פה, באמת.'],['00:07','כשקראתי את התסריט ידעתי שזה משהו אחר.'],['00:13','הסדרה הזאת שינתה לי את החיים, אין דרך אחרת להגיד את זה.'],['00:21','ולעונה השנייה? אני לא יכולה להגיד כלום... אבל תחכו.']],
+  tx:{tt:'"הסדרה הזאת שינתה לי את החיים" 🥹 הרגע הכי מרגש מהשטיח האדום אתמול',
+      ig:'"הסדרה הזאת שינתה לי את החיים" 🥹\nתפסנו אותה על השטיח האדום, והיא כמעט רמזה על העונה השנייה 👀\nצפו עד הסוף ✨',
+      yt:'ראיון מהשטיח האדום: "הסדרה הזאת שינתה לי את החיים" | הדסק'},
+  up:{tt:{by:'נועה',at:'10:51'}}},
+ {id:140,kind:'quote',h:20,cat:'ריאליטי',src:'במה ומסך',at:'09:55',targets:['ig','fb','x'],
+  hl:'לא האמנתי שזה קורה לי באמת',who:'הזוכה בגמר הריאליטי',
+  tx:{ig:'"לא האמנתי שזה קורה לי באמת" 🏆\nהזוכה בגמר אמש מדבר/ת לראשונה אחרי הזכייה. איזה רגע ❤️',
+      fb:'"לא האמנתי שזה קורה לי באמת".\nכך אמר/ה הזוכה בגמר הריאליטי בראיון הראשון אחרי הזכייה. הצבעתם נכון?',
+      x:'"לא האמנתי שזה קורה לי באמת", הזוכה בגמר בראיון ראשון 🏆'},
+  up:{ig:{by:'יוסי',at:'10:05'},fb:{by:'יוסי',at:'10:06'},x:{by:'נועה',at:'10:30'}}},
+ {id:139,kind:'hot',h:200,cat:'טלוויזיה',src:'במה ומסך',at:'08:40',targets:['ig','fb','x'],
+  hl:'רשמי: העונה השנייה של "חוף הלילה" יוצאת בדצמבר',
+  tx:{ig:'סמנו ביומן 🗓️ "חוף הלילה" חוזרת לעונה שנייה בדצמבר!\nמי כבר ראה את העונה הראשונה פעמיים? 🙋',
+      fb:'זה סופי: העונה השנייה של "חוף הלילה" תעלה בדצמבר. מה אתם הכי רוצים לראות בעונה החדשה?',
+      x:'"חוף הלילה" חוזרת לעונה שנייה בדצמבר 🌙'},
+  up:{ig:{by:'יוסי',at:'09:02'}}},
+ {id:138,kind:'proc',h:0,cat:'מוזיקה',src:'ערוץ יוטיוב: קליפים חדשים',at:'11:01',targets:['tt','ig'],
+  hl:'מאחורי הקלעים של הקליפ החדש',tx:{},up:{}},
+ {id:137,kind:'hot',h:310,cat:'מוזיקה',src:'פופ-ניוז',at:'08:15',targets:['ig','fb','tt'],
+  hl:'הסינגל החדש שבר שיא האזנות ביום הראשון',
+  tx:{ig:'שיא חדש! 🚀 הסינגל שיצא אתמול שבר את שיא ההאזנות ליום הראשון. כבר שמעתם? 🎧',
+      fb:'הסינגל החדש שיצא אתמול בערב שבר את שיא ההאזנות ליום הראשון בישראל. מגיע?',
+      tt:'השיר הזה שבר שיא ב-24 שעות 🤯 שמעתם כבר?'},
+  up:{}},
+ {id:136,kind:'quote',h:330,cat:'קולנוע',src:'במה ומסך',at:'07:50',targets:['ig','fb'],
+  hl:'הסט היה המקום הכי שמח שעבדתי בו',who:'במאי הסרט',
+  tx:{ig:'"הסט היה המקום הכי שמח שעבדתי בו" 🎬\nבמאי הסרט על הצילומים. הסרט עולה לבתי הקולנוע בחמישי.',
+      fb:'"הסט היה המקום הכי שמח שעבדתי בו", אומר במאי הסרט לקראת הבכורה בחמישי.'},
+  up:{ig:{by:'נועה',at:'08:20'},fb:{by:'יוסי',at:'08:31'}}},
+ {id:135,kind:'hot',h:40,cat:'מוזיקה',src:'חדשות הלילה',at:'07:30',targets:['ig','fb','x'],
+  hl:'הוכרזו המועמדים לפרס המוזיקה השנתי',
+  tx:{ig:'המועמדים הוכרזו 🏆 מי לדעתכם לוקח/ת את פרס השנה? כתבו בתגובות 👇',
+      fb:'הוכרזו המועמדים לפרס המוזיקה השנתי. הטקס ייערך בעוד חודש. על מי אתם מהמרים?',
+      x:'המועמדים לפרס המוזיקה השנתי הוכרזו. מי לוקח? 🏆'},
+  up:{ig:{by:'יוסי',at:'07:41'},fb:{by:'יוסי',at:'07:44'},x:{by:'נועה',at:'07:58'}}}
+];
+
+const S={view:'list',filter:'all',open:null,tab:null,me:'יוסי'};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const netName=id=>NETS.find(n=>n.id===id).name;
+
+function status(p){
+  if(p.kind==='proc')return 'proc';
+  const n=p.targets.filter(t=>p.up[t]).length;
+  return n===0?'wait':n===p.targets.length?'done':'part';
+}
+const ST={wait:['p-wait','ממתינה להעלאה'],part:['p-part','עלתה חלקית'],done:['p-done','עלתה לכל הרשתות'],proc:['p-proc','בהכנה...']};
+
+function tpl(p,big){
+  if(p.kind==='proc')return `<div class="tpl proc"><p class="hl">Claude מתמלל ומכין כתוביות<br>כ-2 דקות</p></div>`;
+  if(p.kind==='quote')return `<div class="tpl quote" style="--h:${p.h}"><span class="qm">"</span><p class="hl">${esc(p.hl)}</p><div class="foot"><span>${esc(p.who)}</span><span>שם הדף</span></div></div>`;
+  if(p.kind==='video'){
+    const words=p.caps.map((w,i)=>`<i data-w="${i}">${esc(w)}</i>`).join(' ');
+    return `<div class="tpl ${big?'v':'v'}" style="--h:${p.h}"><span class="rib">ראיון</span>${big?'':'<div class="play" aria-hidden="true"><span>▶</span></div>'}<p class="caps">${words}</p></div>`;
+  }
+  return `<div class="tpl" style="--h:${p.h}"><span class="rib">חדשות חמות</span><p class="hl">${esc(p.hl)}</p><div class="foot"><span>${esc(p.cat)}</span><span>שם הדף</span></div></div>`;
+}
+
+function nav(){
+  document.querySelectorAll('.nav button').forEach(b=>{
+    const cur=b.dataset.view===S.view;
+    cur?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current');
+  });
+  $('#waitBadge').textContent=P.filter(p=>status(p)==='wait').length;
+}
+
+function meSelect(id){
+  return `<select id="${id}" aria-label="נכנס/ת בתור">${TEAM.map(t=>`<option ${t.name===S.me?'selected':''}>${t.name}</option>`).join('')}</select>`;
+}
+
+function header(title,sub){
+  return `<p class="demo">מוקאפ עם נתוני דוגמה. כל השמות והידיעות בדויים.</p>
+  <div class="top"><div><h1>${title}</h1><p class="sub">${sub}</p></div>
+  <label class="mobile-me">בתור ${meSelect('meSel2')}</label></div>`;
+}
+
+function renderList(){
+  const f=S.filter;
+  const items=P.filter(p=>f==='all'||status(p)===f);
+  const fb=(k,l)=>`<button data-filter="${k}" aria-pressed="${f===k}">${l}</button>`;
+  return header('חבילות מוכנות','מה שהמערכת הכינה היום. לוחצים על חבילה, מעתיקים, מעלים ומסמנים.')+
+  `<div class="pipe" aria-label="מצב המערכת"><span class="st"><span class="pulse" aria-hidden="true"></span><b>פועלת</b></span>
+    <span class="st">סריקה אחרונה <b class="num">${hm(clock-2)}</b></span>
+    <span class="st">נאספו היום <b class="num">72</b></span>
+    <span class="st">נבחרו והוכנו <b class="num">${P.length}</b></span></div>
+  <div class="filters" role="group" aria-label="סינון">${fb('all','הכול')}${fb('wait','ממתינות')}${fb('part','עלו חלקית')}${fb('done','עלו')}${fb('proc','בהכנה')}</div>
+  <div class="grid">${items.map(p=>{
+    const [c,l]=ST[status(p)];
+    return `<button class="pk" data-open="${p.id}"><div class="thumb">${tpl(p,false)}</div>
+      <div class="body"><div class="meta"><span>#${p.id} · ${esc(p.cat)}</span><span class="num">${p.at}</span></div>
+      <h3>${esc(p.hl)}</h3><span class="pill ${c}">${l}</span>
+      <div class="nets">${p.targets.map(t=>`<span class="n ${p.up[t]?'on':''}">${netName(t)}${p.up[t]?' ✓':''}</span>`).join('')}</div></div></button>`;
+  }).join('')||'<p class="sub">אין חבילות בסינון הזה.</p>'}</div>`;
+}
+
+function renderDetail(){
+  const p=P.find(x=>x.id===S.open);
+  if(!S.tab||!p.tx[S.tab])S.tab=Object.keys(p.tx)[0]||null;
+  const [c,l]=ST[status(p)];
+  const trail=p.kind==='proc'
+    ?`<span>נאסף ${p.at}</span><span>מתמלל...</span>`
+    :`<span>נאסף ${p.at}</span><span>שוכתב ${hm(toMin(p.at)+1)}</span><span>עוצב ${hm(toMin(p.at)+2)}</span><span>נשלחה התראה בוואטסאפ ${hm(toMin(p.at)+3)}</span>`;
+  return `<button class="back" data-back>→ חזרה לחבילות</button>
+  <div class="top"><div><p class="sub">#${p.id} · ${esc(p.cat)} · מקור: ${esc(p.src)}</p><h1>${esc(p.hl)}</h1></div><span class="pill ${c}">${l}</span></div>
+  <div class="trail">${trail}</div>
+  <div class="detail">
+    <div class="media">${tpl(p,true)}
+      ${p.kind==='proc'?'':`<div class="btnrow"><button class="btn primary" data-dl>${p.kind==='video'?'הורדת הסרטון':'הורדת התמונה'}</button><button class="btn" data-dl>גרסה אחרת</button></div>`}
+    </div>
+    <div style="display:grid;gap:16px;min-width:0">
+      ${p.kind==='proc'?`<div class="panel"><h2>בהכנה</h2><p class="sub">Claude מתמלל את הסרטון ומכין טקסטים לכל רשת. החבילה תופיע כאן ותישלח התראה בוואטסאפ כשתהיה מוכנה.</p></div>`:`
+      <div class="panel"><h2>טקסט לכל רשת</h2>
+        <div class="tabs" role="tablist">${Object.keys(p.tx).map(k=>`<button role="tab" data-tab="${k}" aria-selected="${S.tab===k}">${netName(k)}</button>`).join('')}</div>
+        <div class="copytext" id="copytext">${esc(p.tx[S.tab])}</div>
+        <div class="btnrow"><button class="btn primary" data-copy>העתקת הטקסט</button></div>
+      </div>
+      <div class="panel"><h2>סימון העלאה</h2><p class="sub">אחרי שהעלית לרשת, לחץ/י על הכפתור שלה. נרשם בשם ${esc(S.me)}.</p>
+        <div class="rows">${p.targets.map(t=>{const u=p.up[t];return `<div class="row ${u?'done':''}"><div><div class="nm">${netName(t)}</div><div class="who">${u?`✓ עלה · ${esc(u.by)} · <span class="num">${u.at}</span>`:'עוד לא עלה'}</div></div>
+          ${u?`<button class="unmark" data-unmark="${t}">ביטול</button>`:`<button class="mark" data-mark="${t}">✓ סמנתי שעלה</button>`}</div>`}).join('')}</div>
+      </div>
+      ${p.tr?`<div class="panel"><h2>תמלול</h2><div class="transcript">${p.tr.map(([t,s])=>`<p><span class="t">${t}</span><span>${esc(s)}</span></p>`).join('')}</div>
+        <div class="btnrow"><button class="btn" data-copytr>העתקת התמלול</button></div></div>`:''}`}
+    </div>
+  </div>`;
+}
+
+function allUploads(){
+  const out=[];P.forEach(p=>Object.entries(p.up).forEach(([n,u])=>out.push({p,n,...u})));
+  return out.sort((a,b)=>toMin(b.at)-toMin(a.at));
+}
+
+function renderDash(){
+  const ups=allUploads();
+  const ready=P.filter(p=>p.kind!=='proc');
+  const cnt=k=>ready.filter(p=>status(p)===k).length;
+  const stuck=ready.filter(p=>status(p)==='wait'&&clock-toMin(p.at)>=60);
+  const perNet=NETS.map(n=>({n,v:ups.filter(u=>u.n===n.id).length}));
+  const max=Math.max(1,...perNet.map(x=>x.v));
+  const perPerson=TEAM.map(t=>({t,v:ups.filter(u=>u.by===t.name).length,last:ups.find(u=>u.by===t.name)}));
+  return header('לוח מנהלת','היום, נכון לשעה '+hm(clock))+
+  `<div class="kpis">
+    <div class="kpi"><span class="v num">${ready.length}</span><span class="l">חבילות הוכנו</span></div>
+    <div class="kpi"><span class="v num">${ups.length}</span><span class="l">העלאות לרשתות</span></div>
+    <div class="kpi"><span class="v num">${cnt('part')}</span><span class="l">עלו חלקית</span></div>
+    <div class="kpi ${cnt('wait')?'alert':''}"><span class="v num">${cnt('wait')}</span><span class="l">לא עלו לאף רשת</span></div>
+  </div>
+  <div class="two">
+    <div class="panel"><h2>תקועות מעל שעה</h2>
+      ${stuck.length?`<div class="stuck">${stuck.map(p=>`<button data-open="${p.id}"><b>${esc(p.hl)}</b><span class="num">${Math.floor((clock-toMin(p.at))/60)} ש' ${(clock-toMin(p.at))%60} ד'</span></button>`).join('')}</div>`:'<p class="sub">אין חבילות תקועות. כל הכבוד לצוות.</p>'}
+    </div>
+    <div class="panel"><h2>העלאות לפי רשת</h2>
+      <div class="bars">${perNet.map(x=>`<div class="bar"><span>${x.n.name}</span><div class="track"><div class="fill" style="width:${x.v/max*100}%"></div></div><span class="num">${x.v}</span></div>`).join('')}</div>
+    </div>
+    <div class="panel"><h2>מי העלה מה</h2>
+      <div style="overflow-x:auto"><table><thead><tr><th>שם</th><th>תפקיד</th><th>העלאות היום</th><th>אחרונה</th></tr></thead>
+      <tbody>${perPerson.map(x=>`<tr><td><b>${x.t.name}</b></td><td>${x.t.role}</td><td class="num">${x.v}</td><td class="num">${x.last?x.last.at+' · '+netName(x.last.n):'·'}</td></tr>`).join('')}</tbody></table></div>
+    </div>
+    <div class="panel"><h2>פעילות אחרונה</h2>
+      <div class="feed">${ups.map(u=>`<div><span class="t num">${u.at}</span><span><b>${esc(u.by)}</b> העלה/תה ל${netName(u.n)}: ${esc(u.p.hl)}</span></div>`).join('')}</div>
+    </div>
+  </div>`;
+}
+
+function renderSettings(){
+  const mini=[P[0],P[2],P[1]];
+  return header('הגדרות','מה המערכת סורקת, איך היא כותבת ואיך היא מעצבת')+
+  `<div class="two">
+    <div class="panel"><h2>מקורות חדשות</h2>
+      <div class="list">${SOURCES.map((s,i)=>`<div class="item"><div><b>${esc(s.name)}</b><div class="s">${esc(s.s)}</div></div><input type="checkbox" class="sw" id="src${i}" data-src="${i}" ${s.on?'checked':''} aria-label="סריקת ${esc(s.name)}"></div>`).join('')}</div>
+      <label class="field" for="freq">תדירות סריקה
+        <select id="freq"><option>כל 5 דקות</option><option selected>כל 10 דקות</option><option>כל 30 דקות</option></select></label>
+    </div>
+    <div class="panel"><h2>הסגנון של הדף</h2>
+      <p class="sub">נלמד מ-20 פוסטים של הדף. Claude כותב לפי הכללים האלה.</p>
+      <ul class="voice"><li>פותחים במשפט שמעורר סקרנות, לא בעובדה יבשה</li><li>2–3 אימוג'ים בפוסט, אף פעם לא ברצף</li><li>שואלים את הקהל שאלה בסוף</li><li>לא כותבים שמועה כעובדה. אם זה לא מאושר, כותבים "לפי הדיווח"</li><li>בטיקטוק: עד 15 מילים</li></ul>
+    </div>
+    <div class="panel"><h2>תבניות עיצוב</h2>
+      <div class="tpls">${mini.map((p,i)=>`<figure>${tpl(p,false)}<figcaption>${['חדשות חמות','ציטוט','ראיון / וידאו'][i]}</figcaption></figure>`).join('')}</div>
+    </div>
+    <div class="panel"><h2>הצוות</h2>
+      <div class="list">${TEAM.map((t,i)=>`<div class="item"><div><b>${t.name}</b><div class="s">${t.role} · התראות בוואטסאפ</div></div><input type="checkbox" class="sw" id="wa${i}" checked aria-label="התראות בוואטסאפ ל${t.name}"></div>`).join('')}</div>
+    </div>
+  </div>`;
+}
+
+let capTimer=null;
+function render(){
+  clearInterval(capTimer);
+  const m=$('#main');
+  m.innerHTML=S.view==='list'?(S.open?renderDetail():renderList()):S.view==='dash'?renderDash():renderSettings();
+  nav();
+  const ms=$('#meSel2');if(ms)ms.addEventListener('change',e=>setMe(e.target.value));
+  startCaps();
+}
+
+function startCaps(){
+  const boxes=[...document.querySelectorAll('.caps')];
+  if(!boxes.length)return;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let i=0;
+  const step=()=>{boxes.forEach(b=>{const w=b.querySelectorAll('i');w.forEach((x,j)=>x.classList.toggle('hi',j===i%w.length))});i++};
+  step();
+  if(!reduce)capTimer=setInterval(step,550);
+}
+
+function setMe(v){S.me=v;$('#meSel').value=v;render()}
+
+let tt=null;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+
+function copy(text){
+  const done=()=>toast('הועתק. אפשר להדביק ברשת');
+  try{navigator.clipboard.writeText(text).then(done,()=>fallback())}catch(e){fallback()}
+  function fallback(){const el=$('#copytext');if(el){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r)}toast('סמנתי את הטקסט. העתיקו עם Ctrl+C')}
+}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.view){S.view=b.dataset.view;S.open=null;render();scrollTo(0,0);return}
+  if(b.dataset.filter){S.filter=b.dataset.filter;render();return}
+  if(b.dataset.open){S.view='list';S.open=+b.dataset.open;S.tab=null;render();scrollTo(0,0);return}
+  if('back' in b.dataset){S.open=null;render();return}
+  if(b.dataset.tab){S.tab=b.dataset.tab;render();return}
+  const p=P.find(x=>x.id===S.open);
+  if('copy' in b.dataset&&p){copy(p.tx[S.tab]);return}
+  if('copytr' in b.dataset&&p){copy(p.tr.map(r=>r[0]+' '+r[1]).join('\n'));return}
+  if('dl' in b.dataset){toast('במערכת האמיתית הקובץ יורד לטלפון או למחשב');return}
+  if(b.dataset.mark&&p){clock++;p.up[b.dataset.mark]={by:S.me,at:hm(clock)};render();toast(`נרשם ✓ ${netName(b.dataset.mark)} · ${S.me} · ${hm(clock)}`);return}
+  if(b.dataset.unmark&&p){delete p.up[b.dataset.unmark];render();toast('הסימון בוטל');return}
+});
+document.addEventListener('change',e=>{
+  if(e.target.dataset.src!==undefined){const s=SOURCES[+e.target.dataset.src];s.on=e.target.checked;toast(s.on?`${s.name} נכלל בסריקה`:`${s.name} הושבת`)}
+});
+
+$('#meSel').innerHTML=TEAM.map(t=>`<option ${t.name===S.me?'selected':''}>${t.name}</option>`).join('');
+$('#meSel').addEventListener('change',e=>setMe(e.target.value));
+render();
+</script>
+</body></html>

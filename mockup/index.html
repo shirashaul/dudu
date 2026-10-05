@@ -5,7 +5,7 @@
 <style>
 /* Layout: newsroom desk app — side rail (desktop) / bottom tabs (phone), main column of package cards; detail view replaces list */
 :root{
-  --bg:#f4f4f1; --surface:#ffffff; --raised:#fafaf8; --ink:#171926; --muted:#5f6273; --line:#e2e1dc; --chip:#eeede8;
+  --bg:#f4f4f1; --surface:#ffffff; --raised:#fafaf8; --ink:#171926; --muted:#5f6273; --line:#e2e1dc; --chip:#eeede8; --bar:#4a5bd4;
   --live:#e0204c; --live-soft:#fde7ec; --ok:#12805a; --ok-soft:#e1f3eb; --wait:#9a6500; --wait-soft:#fbf0d6;
   --rail:#171926; --rail-ink:#f4f4f1; --rail-muted:#9fa2b4;
   --display:"Secular One","Assistant",system-ui,sans-serif;
@@ -13,11 +13,11 @@
   --body:"Assistant",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#111219; --surface:#1a1c27; --raised:#20232f; --ink:#f1f0ec; --muted:#a2a5b6; --line:#2b2e3d; --chip:#262938;
+  --bg:#111219; --surface:#1a1c27; --raised:#20232f; --ink:#f1f0ec; --muted:#a2a5b6; --line:#2b2e3d; --chip:#262938; --bar:#8f9bff;
   --live:#ff4b72; --live-soft:#3a1722; --ok:#3fcf8e; --ok-soft:#12301f; --wait:#eab54d; --wait-soft:#33280e;
   --rail:#0b0c12; --rail-ink:#f1f0ec; --rail-muted:#8c8fa1; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#111219; --surface:#1a1c27; --raised:#20232f; --ink:#f1f0ec; --muted:#a2a5b6; --line:#2b2e3d; --chip:#262938;
+  --bg:#111219; --surface:#1a1c27; --raised:#20232f; --ink:#f1f0ec; --muted:#a2a5b6; --line:#2b2e3d; --chip:#262938; --bar:#8f9bff;
   --live:#ff4b72; --live-soft:#3a1722; --ok:#3fcf8e; --ok-soft:#12301f; --wait:#eab54d; --wait-soft:#33280e;
   --rail:#0b0c12; --rail-ink:#f1f0ec; --rail-muted:#8c8fa1; color-scheme:dark}
 
@@ -167,7 +167,29 @@ details.hist summary{cursor:pointer;font-weight:800;font-size:.9rem}
 .bars{display:grid;gap:10px}
 .bar{display:grid;grid-template-columns:90px 1fr 32px;gap:10px;align-items:center;font-size:.9rem}
 .bar .track{height:14px;background:var(--chip);border-radius:99px;overflow:hidden}
-.bar .fill{height:100%;background:var(--ok);border-radius:99px}
+.bar .fill{height:100%;background:var(--bar);border-radius:99px}
+.bar.wide{grid-template-columns:120px 1fr 64px}
+.linkin{display:grid;gap:6px;grid-column:1/-1}
+.linkin input{border:2px solid var(--live);background:var(--surface);border-radius:10px;padding:8px 12px;width:100%;direction:ltr;text-align:left}
+.perf td,.perf th{font-variant-numeric:tabular-nums}
+.perf a{color:var(--bar);font-weight:700;text-decoration:none}
+.newform{display:grid;gap:18px;max-width:720px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 16px;font-weight:800}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.newform textarea{border-color:var(--line);min-height:130px}
+.newform input[type=url],.newform input[type=file]{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;width:100%}
+.checks{display:flex;gap:8px;flex-wrap:wrap}
+.checks label{display:flex;gap:6px;align-items:center;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-weight:700;font-size:.9rem;cursor:pointer}
+.heads{display:grid;gap:6px}
+.heads div{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.heads div.cur{border-color:var(--ok);background:var(--ok-soft)}
+.insights{background:var(--live-soft);border-radius:14px;padding:18px;display:grid;gap:10px}
+.insights h2{font-size:1.2rem}
+.insights ul{margin:0;padding-inline-start:20px;display:grid;gap:6px}
+.insights li b{color:var(--live)}
+.kpi .d{font-size:.8rem;font-weight:800}
+.up{color:var(--ok)} .down{color:var(--live)}
 table{width:100%;border-collapse:collapse;font-size:.92rem}
 th,td{text-align:start;padding:8px 6px;border-bottom:1px solid var(--line)}
 th{color:var(--muted);font-weight:700;font-size:.82rem}
@@ -202,6 +224,7 @@ th{color:var(--muted);font-weight:700;font-size:.82rem}
   .kpis{grid-template-columns:1fr 1fr}
 }
 @media (max-width:760px){
+  .nav button{font-size:.78rem!important}
   .app{grid-template-columns:1fr}
   .rail{position:fixed;bottom:0;top:auto;inset-inline:0;height:auto;flex-direction:row;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:10;gap:0}
   .brand,.me{display:none}
@@ -222,6 +245,7 @@ th{color:var(--muted);font-weight:700;font-size:.82rem}
     <nav class="nav" aria-label="ניווט">
       <button data-view="list"><span>חבילות</span><span class="badge num" id="waitBadge">0</span></button>
       <button data-view="dash"><span>לוח מנהלת</span></button>
+      <button data-view="perf"><span>ביצועים</span></button>
       <button data-view="settings"><span>הגדרות</span></button>
     </nav>
     <label class="me" for="meSel">נכנסת/ת בתור
@@ -296,7 +320,7 @@ const P=[
   up:{ig:{by:'יוסי',at:'07:41'},fb:{by:'יוסי',at:'07:44'},x:{by:'נועה',at:'07:58'}}}
 ];
 
-const S={view:'list',filter:'all',open:null,tab:null,me:'יוסי',editing:false,busy:false,imgEdit:false};
+const S={view:'list',filter:'all',open:null,tab:null,me:'יוסי',editing:false,busy:false,imgEdit:false,marking:null};
 
 // Pre-written alternates so the mock "rewrite" returns believable text
 const ALT={
@@ -348,6 +372,10 @@ function rewrite(p,k,mode,instr){
   if(/רשמי|רציני/.test(s))return formal();
   return other();
 }
+const fmt=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(n);
+function seedStats(p,t){const base={ig:9000,fb:5200,tt:16000,x:2100,yt:7400}[t];const k=(p.kind==='video'?2.3:p.kind==='quote'?1.3:1)*(1+((p.id*7+t.length*13)%10)/10);const v=Math.round(base*k);return {v,l:Math.round(v*.068),c:Math.round(v*.009),s:Math.round(v*.004)}}
+P.forEach(p=>Object.entries(p.up).forEach(([t,u])=>{u.link=`https://${t==='ig'?'instagram.com/p':t==='fb'?'facebook.com/posts':t==='tt'?'tiktok.com/@page/video':t==='x'?'x.com/page/status':'youtube.com/shorts'}/${p.id}${t}`;u.stats=seedStats(p,t)}));
+const views=p=>Object.values(p.up).reduce((a,u)=>a+(u.stats?u.stats.v:0),0);
 const MODES={short:'קצר יותר',noemoji:'בלי אימוג\'ים',formal:'רשמי יותר',other:'גרסה אחרת'};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -372,7 +400,7 @@ function tpl(p,big){
 
 function nav(){
   document.querySelectorAll('.nav button').forEach(b=>{
-    const cur=b.dataset.view===S.view;
+    const cur=b.dataset.view===S.view||(S.view==='new'&&b.dataset.view==='list');
     cur?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current');
   });
   $('#waitBadge').textContent=P.filter(p=>status(p)==='wait').length;
@@ -393,6 +421,7 @@ function renderList(){
   const items=P.filter(p=>f==='all'||status(p)===f);
   const fb=(k,l)=>`<button data-filter="${k}" aria-pressed="${f===k}">${l}</button>`;
   return header('חבילות מוכנות','מה שהמערכת הכינה היום. לוחצים על חבילה, מעתיקים, מעלים ומסמנים.')+
+  `<div><button class="btn primary" data-new>+ אייטם חדש משלי</button></div>`+
   `<div class="pipe" aria-label="מצב המערכת"><span class="st"><span class="pulse" aria-hidden="true"></span><b>פועלת</b></span>
     <span class="st">סריקה אחרונה <b class="num">${hm(clock-2)}</b></span>
     <span class="st">נאספו היום <b class="num">72</b></span>
@@ -402,7 +431,7 @@ function renderList(){
     const [c,l]=ST[status(p)];
     return `<button class="pk" data-open="${p.id}"><div class="thumb">${tpl(p,false)}</div>
       <div class="body"><div class="meta"><span>#${p.id} · ${esc(p.cat)}</span><span class="num">${p.at}</span></div>
-      <h3>${esc(p.hl)}</h3><div class="nets"><span class="pill ${c}">${l}</span>${(COMMENTS[p.id]||[]).length?`<span class="n">💬 ${(COMMENTS[p.id]||[]).length}</span>`:''}${p.hist&&Object.values(p.hist).some(h=>h.length>1)?'<span class="edited">נערך</span>':''}</div>
+      <h3>${esc(p.hl)}</h3><div class="nets"><span class="pill ${c}">${l}</span>${views(p)?`<span class="n num">👁 ${fmt(views(p))}</span>`:''}${(COMMENTS[p.id]||[]).length?`<span class="n">💬 ${(COMMENTS[p.id]||[]).length}</span>`:''}${p.hist&&Object.values(p.hist).some(h=>h.length>1)?'<span class="edited">נערך</span>':''}</div>
       <div class="nets">${p.targets.map(t=>`<span class="n ${p.up[t]?'on':''}">${netName(t)}${p.up[t]?' ✓':''}</span>`).join('')}</div></div></button>`;
   }).join('')||'<p class="sub">אין חבילות בסינון הזה.</p>'}</div>`;
 }
@@ -423,11 +452,13 @@ function renderDetail(){
       ${S.imgEdit?`<div class="imgedit"><label for="imgHl" class="field">כותרת חדשה לתמונה</label><input id="imgHl" value="${esc(p.img||p.hl)}"><div class="btnrow"><button class="btn primary" data-imgsave>עדכון התמונה</button><button class="btn" data-imgcancel>ביטול</button></div></div>`:''}`}
     </div>
     <div style="display:grid;gap:16px;min-width:0">
-      ${p.kind==='proc'?`<div class="panel"><h2>בהכנה</h2><p class="sub">Claude מתמלל את הסרטון ומכין טקסטים לכל רשת. החבילה תופיע כאן ותישלח התראה בוואטסאפ כשתהיה מוכנה.</p></div>`:textPanel(p)+`
+      ${p.kind==='proc'?`<div class="panel"><h2>בהכנה</h2><p class="sub">Claude מתמלל את הסרטון ומכין טקסטים לכל רשת. החבילה תופיע כאן ותישלח התראה בוואטסאפ כשתהיה מוכנה.</p></div>`:headsPanel(p)+textPanel(p)+`
       <div class="panel"><h2>סימון העלאה</h2><p class="sub">אחרי שהעלית לרשת, לחץ/י על הכפתור שלה. נרשם בשם ${esc(S.me)}.</p>
         <div class="rows">${p.targets.map(t=>{const u=p.up[t];const late=u&&p.hist&&p.hist[t]&&toMin(p.hist[t][p.hist[t].length-1].at)>toMin(u.at);return `<div class="row ${u?'done':''}"><div><div class="nm">${netName(t)}</div><div class="who">${u?`✓ עלה · ${esc(u.by)} · <span class="num">${u.at}</span>`:'עוד לא עלה'}</div>${late?'<div class="warn">⚠ הטקסט נערך אחרי ההעלאה. כדאי לעדכן גם ברשת</div>':''}</div>
-          ${u?`<button class="unmark" data-unmark="${t}">ביטול</button>`:`<button class="mark" data-mark="${t}">✓ סמנתי שעלה</button>`}</div>`}).join('')}</div>
+          ${u?`<button class="unmark" data-unmark="${t}">ביטול</button>`:S.marking===t?'':`<button class="mark" data-mark="${t}">✓ סמנתי שעלה</button>`}
+          ${S.marking===t&&!u?`<form class="linkin" data-linkform><label for="linkIn" class="sub">הדביקו את הקישור לפוסט ב${netName(t)}. כך המערכת תמשוך את הנתונים שלו</label><input id="linkIn" type="url" inputmode="url" placeholder="https://"><div class="btnrow"><button class="mark" type="submit">אישור</button><button class="unmark" type="button" data-markcancel>ביטול</button></div></form>`:''}</div>`}).join('')}</div>
       </div>
+      ${perfPanel(p)}
       ${commentsPanel(p)}
       ${p.tr?`<div class="panel"><h2>תמלול</h2><div class="transcript">${p.tr.map(([t,s])=>`<p><span class="t">${t}</span><span>${esc(s)}</span></p>`).join('')}</div>
         <div class="btnrow"><button class="btn" data-copytr>העתקת התמלול</button></div></div>`:''}`}
@@ -453,6 +484,103 @@ function textPanel(p){
       <div class="hlist">${h.map((v,i)=>({v,i})).reverse().map(({v,i})=>`<div class="hv ${i===h.length-1?'cur':''}"><div><div><b>גרסה ${i+1}</b> · ${esc(v.by)} · <span class="num">${v.at}</span> · ${esc(v.note)}</div><div class="tx">${esc(v.text.split('\n')[0])}</div></div>
         ${i===h.length-1?'<span class="pill p-done">נוכחית</span>':`<button class="unmark" data-restore="${i}">שחזור</button>`}</div>`).join('')}</div>
     </details>
+  </div>`;
+}
+
+function headsPanel(p){
+  if(!p.heads)return '';
+  return `<div class="panel"><h2>כותרות מוצעות</h2><p class="sub">בחרו כותרת. היא תתעדכן בחבילה ובתמונה.</p>
+    <div class="heads">${p.heads.map((h,i)=>`<div class="${h===p.hl?'cur':''}"><span>${esc(h)}</span>${h===p.hl?'<span class="pill p-done">נבחרה</span>':`<button class="unmark" data-pick="${i}">בחירה</button>`}</div>`).join('')}</div></div>`;
+}
+
+function renderNew(){
+  const src=S.src||'text';
+  const sb=(k,l)=>`<button type="button" data-src="${k}" aria-pressed="${src===k}">${l}</button>`;
+  return header('אייטם חדש','מכניסים חומר, בוחרים מה להכין, ו-Claude מכין חבילה כמו כל השאר')+
+  `<form class="newform panel" data-newform>
+    <div class="field">מה יש לך?<div class="seg">${sb('text','טקסט או רעיון')}${sb('link','קישור לכתבה')}${sb('video','סרטון')}</div></div>
+    ${src==='text'?`<label class="field" for="nText">הטקסט<textarea id="nText" placeholder="למשל: הודיעו הבוקר שהזוג מהעונה הקודמת מתחתן בקיץ. החתונה בצפון, 300 מוזמנים"></textarea></label>`
+     :src==='link'?`<label class="field" for="nLink">קישור לכתבה<input id="nLink" type="url" placeholder="https://"></label>`
+     :`<label class="field" for="nVid">קובץ וידאו<input id="nVid" type="file" accept="video/*"></label>`}
+    <div class="field">מה להכין?<div class="checks">
+      <label><input type="checkbox" id="wHeads" checked> 5 כותרות לבחירה</label>
+      <label><input type="checkbox" id="wText" checked> טקסט לכל רשת</label>
+      <label><input type="checkbox" id="wImg" ${src==='video'?'':'checked'}> תמונה מעוצבת</label>
+      ${src==='video'?'<label><input type="checkbox" id="wTr" checked> תמלול + כתוביות</label>':''}
+    </div></div>
+    <div class="field">לאילו רשתות?<div class="checks">${NETS.map(n=>`<label><input type="checkbox" id="net_${n.id}" ${['ig','fb','tt'].includes(n.id)?'checked':''}> ${n.name}</label>`).join('')}</div></div>
+    <label class="checks"><label><input type="checkbox" id="nUrgent"> דחוף. שולח התראה לכל הצוות</label></label>
+    <div class="btnrow"><button class="btn primary" type="submit">הכנה עם Claude</button><button class="btn" type="button" data-view="list">ביטול</button></div>
+  </form>`;
+}
+
+function createItem(){
+  const src=S.src||'text';
+  let hl,raw='',vid=false;
+  if(src==='text'){raw=$('#nText').value.trim();if(!raw){toast('כתבו טקסט או רעיון');return}hl=raw.split(/[.\n]/)[0].slice(0,70)}
+  else if(src==='link'){const v=$('#nLink').value.trim();if(!/^https?:\/\/\S+\.\S+/.test(v)){toast('הדביקו קישור שמתחיל ב-https://');return}let host='';try{host=new URL(v).hostname.replace('www.','')}catch(e){}hl='הידיעה מ-'+host}
+  else{const fl=$('#nVid').files[0];if(!fl){toast('בחרו קובץ וידאו');return}vid=true;hl='סרטון: '+fl.name.replace(/\.[^.]+$/,'')}
+  const targets=NETS.filter(n=>$('#net_'+n.id).checked).map(n=>n.id);
+  if(!targets.length){toast('בחרו לפחות רשת אחת');return}
+  const wantHeads=$('#wHeads').checked, wantTr=vid&&$('#wTr')&&$('#wTr').checked, urgent=$('#nUrgent').checked;
+  clock++;
+  const p={id:Math.max(...P.map(x=>x.id))+1,kind:'proc',h:(clock*37)%360,cat:'אייטם ידני',src:'הוזן ע"י '+S.me+(urgent?' · דחוף':''),at:hm(clock),targets,hl,tx:{},up:{}};
+  P.unshift(p);
+  LOG.unshift({at:hm(clock),by:S.me,pid:p.id,text:'הוסיף/ה אייטם חדש: '+hl});
+  S.view='list';S.open=p.id;S.tab=null;render();scrollTo(0,0);
+  toast(urgent?'נשלח ל-Claude. כל הצוות קיבל התראה':'נשלח ל-Claude. החבילה תהיה מוכנה בעוד רגע');
+  setTimeout(()=>{
+    const core=hl;
+    p.kind=vid?'video':'hot';
+    if(wantHeads)p.heads=[core,'רשמי: '+core,core+', וזה רק ההתחלה','כולם מדברים על זה: '+core,core+'? הנה מה שידוע'];
+    const body=raw||core;
+    const all={ig:core+' 🔥\n'+(raw&&raw!==core?raw.slice(core.length).replace(/^[.\s]+/,'')+'\n':'')+'מה דעתכם? כתבו בתגובות 👇',
+      fb:body+'\n\nמה אתם אומרים?',tt:core+' 👀',x:core.slice(0,120),yt:core+' | שם הדף'};
+    targets.forEach(t=>p.tx[t]=all[t]);
+    if(vid){p.caps=core.replace('סרטון: ','').split(/\s+/).slice(0,6);if(p.caps.length<2)p.caps=['ככה','זה','נראה','מבפנים'];if(wantTr)p.tr=[['00:01','(כאן יופיע התמלול המלא של הסרטון, עם חותמות זמן)'],['00:09','(Claude גם מסמן את 3 הציטוטים החזקים)']]}
+    clock++;LOG.unshift({at:hm(clock),by:'Claude',pid:p.id,text:'הכין חבילה: '+core});
+    if(S.open===p.id||S.view==='list')render();
+    toast('החבילה מוכנה ✓');
+  },2600);
+}
+
+function perfPanel(p){
+  const rows=Object.entries(p.up);
+  if(!rows.length)return '';
+  return `<div class="panel"><h2>ביצועים</h2><p class="sub">מתעדכן אוטומטית כל שעה מהרשתות.</p>
+    <div style="overflow-x:auto"><table class="perf"><thead><tr><th>רשת</th><th>צפיות</th><th>לייקים</th><th>תגובות</th><th>שיתופים</th><th></th></tr></thead><tbody>
+    ${rows.map(([t,u])=>u.stats?`<tr><td><b>${netName(t)}</b></td><td>${fmt(u.stats.v)}</td><td>${fmt(u.stats.l)}</td><td>${fmt(u.stats.c)}</td><td>${fmt(u.stats.s)}</td><td><button class="unmark" data-fake>לפוסט ↗</button></td></tr>`
+      :`<tr><td><b>${netName(t)}</b></td><td colspan="5" class="sub">הנתונים יגיעו תוך כשעה</td></tr>`).join('')}
+    </tbody></table></div></div>`;
+}
+
+function renderPerf(){
+  const tplAvg=[['וידאו / ראיון',18600],['ציטוט',10400],['חדשות חמות',7900]];
+  const hours=[['07–09',6200],['09–12',7100],['12–15',6800],['15–18',8300],['18–21',13900],['21–24',11200]];
+  const eng=[['טיקטוק',9.4],['אינסטגרם',7.1],['יוטיוב',5.2],['פייסבוק',3.8],['X',2.1]];
+  const bars=(arr,unit,f)=>{const mx=Math.max(...arr.map(a=>a[1]));return `<div class="bars">${arr.map(([n,v])=>`<div class="bar wide" title="${n}: ${f(v)}${unit}"><span>${n}</span><div class="track"><div class="fill" style="width:${v/mx*100}%"></div></div><span class="num">${f(v)}${unit}</span></div>`).join('')}</div>`};
+  const top=P.filter(p=>views(p)).sort((a,b)=>views(b)-views(a)).slice(0,5);
+  return header('ביצועים','30 הימים האחרונים · נתוני דוגמה')+
+  `<div class="kpis">
+    <div class="kpi"><span class="v num">2.4M</span><span class="l">צפיות</span><span class="d up">▲ 18% מהחודש הקודם</span></div>
+    <div class="kpi"><span class="v num">9.2K</span><span class="l">ממוצע צפיות לפוסט</span><span class="d up">▲ 11%</span></div>
+    <div class="kpi"><span class="v num">31K</span><span class="l">תגובות</span><span class="d down">▼ 4%</span></div>
+    <div class="kpi"><span class="v num">262</span><span class="l">פוסטים שעלו</span><span class="d up">▲ 23%</span></div>
+  </div>
+  <div class="insights"><h2>מה Claude למד החודש</h2><ul>
+    <li>סרטוני ראיון מקבלים <b>פי 2.3</b> צפיות מתמונות. כדאי להעלות יותר וידאו.</li>
+    <li>פוסטים שעולים בין <b>18:00 ל-21:00</b> מקבלים הכי הרבה צפיות, אבל רוב ההעלאות שלכם הן בבוקר.</li>
+    <li>כותרות שנפתחות בשאלה מקבלות <b>40% יותר תגובות</b>. מעכשיו אציע אותן יותר.</li>
+    <li>בפייסבוק המעורבות יורדת כבר 3 שבועות. שווה לבדוק אורך טקסט ושעות.</li>
+  </ul></div>
+  <div class="two">
+    <div class="panel"><h2>ממוצע צפיות לפי סוג פוסט</h2>${bars(tplAvg,'',fmt)}</div>
+    <div class="panel"><h2>ממוצע צפיות לפי שעת העלאה</h2>${bars(hours,'',fmt)}</div>
+    <div class="panel"><h2>מעורבות לפי רשת</h2><p class="sub">לייקים, תגובות ושיתופים ביחס לצפיות</p>${bars(eng,'%',v=>v.toFixed(1))}</div>
+    <div class="panel"><h2>הפוסטים המובילים היום</h2>
+      <div style="overflow-x:auto"><table class="perf"><thead><tr><th>פוסט</th><th>צפיות</th><th>העלו</th></tr></thead><tbody>
+      ${top.map(p=>`<tr><td><button class="back" style="color:var(--ink);text-align:start" data-open="${p.id}">${esc(p.hl)}</button></td><td>${fmt(views(p))}</td><td>${[...new Set(Object.values(p.up).map(u=>u.by))].join(', ')}</td></tr>`).join('')}
+      </tbody></table></div></div>
   </div>`;
 }
 
@@ -527,7 +655,7 @@ let capTimer=null;
 function render(){
   clearInterval(capTimer);
   const m=$('#main');
-  m.innerHTML=S.view==='list'?(S.open?renderDetail():renderList()):S.view==='dash'?renderDash():renderSettings();
+  m.innerHTML=S.view==='list'?(S.open?renderDetail():renderList()):S.view==='dash'?renderDash():S.view==='perf'?renderPerf():S.view==='new'?renderNew():renderSettings();
   nav();
   const ms=$('#meSel2');if(ms)ms.addEventListener('change',e=>setMe(e.target.value));
   startCaps();
@@ -556,9 +684,9 @@ function copy(text){
 
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
-  if(b.dataset.view){S.view=b.dataset.view;S.open=null;render();scrollTo(0,0);return}
+  if(b.dataset.view){S.marking=null;S.view=b.dataset.view;S.open=null;render();scrollTo(0,0);return}
   if(b.dataset.filter){S.filter=b.dataset.filter;render();return}
-  if(b.dataset.open){S.view='list';S.open=+b.dataset.open;S.tab=null;S.editing=false;S.imgEdit=false;render();scrollTo(0,0);return}
+  if(b.dataset.open){S.view='list';S.open=+b.dataset.open;S.tab=null;S.marking=null;S.editing=false;S.imgEdit=false;render();scrollTo(0,0);return}
   if('back' in b.dataset){S.open=null;render();return}
   if(b.dataset.tab){S.tab=b.dataset.tab;S.editing=false;render();return}
   const p=P.find(x=>x.id===S.open);
@@ -572,8 +700,14 @@ document.addEventListener('click',e=>{
   if('imgedit' in b.dataset){S.imgEdit=!S.imgEdit;render();return}
   if('imgcancel' in b.dataset){S.imgEdit=false;render();return}
   if('imgsave' in b.dataset&&p){const v=$('#imgHl').value.trim();S.imgEdit=false;if(v){p.img=v;clock++;LOG.unshift({at:hm(clock),by:S.me,pid:p.id,text:'שינה/תה את הכותרת בתמונה: '+p.hl})}render();toast('התמונה עודכנה');return}
+  if('fake' in b.dataset){toast('במערכת האמיתית נפתח הפוסט ברשת');return}
+  if('new' in b.dataset){S.view='new';S.open=null;S.src='text';render();scrollTo(0,0);return}
+  if(b.dataset.src){S.src=b.dataset.src;render();return}
+  if(b.dataset.pick&&p){p.hl=p.img=p.heads[+b.dataset.pick];clock++;LOG.unshift({at:hm(clock),by:S.me,pid:p.id,text:'בחר/ה כותרת: '+p.hl});render();toast('הכותרת עודכנה בחבילה ובתמונה');return}
   if('dl' in b.dataset){toast('במערכת האמיתית הקובץ יורד לטלפון או למחשב');return}
-  if(b.dataset.mark&&p){clock++;p.up[b.dataset.mark]={by:S.me,at:hm(clock)};render();toast(`נרשם ✓ ${netName(b.dataset.mark)} · ${S.me} · ${hm(clock)}`);return}
+  if(b.dataset.mark&&p){S.marking=b.dataset.mark;render();const i=$('#linkIn');if(i)i.focus();return}
+  if('markcancel' in b.dataset){S.marking=null;render();return}
+  if(false){toast(`נרשם ✓ ${netName(b.dataset.mark)} · ${S.me} · ${hm(clock)}`);return}
   if(b.dataset.unmark&&p){delete p.up[b.dataset.unmark];render();toast('הסימון בוטל');return}
 });
 function runRewrite(p,mode,instr){
@@ -582,7 +716,10 @@ function runRewrite(p,mode,instr){
 }
 document.addEventListener('submit',e=>{
   e.preventDefault();
+  if('newform' in e.target.dataset){createItem();return}
   const p=P.find(x=>x.id===S.open);if(!p)return;
+  if('linkform' in e.target.dataset){const v=$('#linkIn').value.trim();if(!/^https?:\/\/\S+\.\S+/.test(v)){toast('הקישור צריך להתחיל ב-https:// ולהוביל לפוסט');return}
+    const t=S.marking;clock++;p.up[t]={by:S.me,at:hm(clock),link:v,stats:null};S.marking=null;render();toast(`נרשם ✓ ${netName(t)} · ${S.me} · ${hm(clock)}`);return}
   if('askform' in e.target.dataset){const v=$('#askIn').value.trim();if(v)runRewrite(p,null,v);return}
   if('cmform' in e.target.dataset){const v=$('#cmIn').value.trim();if(!v)return;clock++;(COMMENTS[p.id]=COMMENTS[p.id]||[]).push({by:S.me,at:hm(clock),text:v});LOG.unshift({at:hm(clock),by:S.me,pid:p.id,text:'הגיב/ה על '+p.hl});render();toast('ההערה נשלחה לצוות')}
 });

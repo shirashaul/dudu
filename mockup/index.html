@@ -343,7 +343,7 @@ const P=[
   up:{ig:{by:'יוסי',at:'07:41'},fb:{by:'יוסי',at:'07:44'},x:{by:'נועה',at:'07:58'}}}
 ];
 
-const S={view:'list',filter:'all',open:null,tab:null,me:'יוסי',editing:false,busy:false,imgEdit:false,marking:null};
+const S={lastVisit:40,view:'list',filter:'all',open:null,tab:null,me:'יוסי',editing:false,busy:false,imgEdit:false,marking:null};
 
 // Pre-written alternates so the mock "rewrite" returns believable text
 const ALT={
@@ -402,7 +402,7 @@ const views=p=>Object.values(p.up).reduce((a,u)=>a+(u.stats?u.stats.v:0),0);
 const THR=7;
 const NEWS=[
  {t:'פסטיבל "גלים" חושף את ההרכב המלא',cat:'מוזיקה',src:['פופ-ניוז','במה ומסך','חדשות הלילה'],ago:17,sc:9,why:'סיפור שכולם מדווחים עליו, מעורבות גבוהה בפוסטים דומים',pkg:142},
- {t:'רשמי: העונה השנייה של "חוף הלילה" יוצאת בדצמבר',cat:'טלוויזיה',src:['במה ומסך','פופ-ניוז'],ago:145,sc:8,why:'הסדרה עם הכי הרבה תגובות אצלכם החודש',pkg:139},
+ {t:'רשמי: העונה השנייה של "חוף הלילה" יוצאת בדצמבר',cat:'טלוויזיה',src:['במה ומסך','פופ-ניוז','הודעת הערוץ'],off:true,ago:145,sc:8,why:'הסדרה עם הכי הרבה תגובות אצלכם החודש',pkg:139},
  {t:'הסינגל החדש שבר שיא האזנות ביום הראשון',cat:'מוזיקה',src:['פופ-ניוז'],ago:170,sc:8,why:'שיא ומספרים עובדים טוב בטיקטוק',pkg:137},
  {t:'הוכרזו המועמדים לפרס המוזיקה השנתי',cat:'מוזיקה',src:['חדשות הלילה','פופ-ניוז'],ago:215,sc:7,why:'מזמין שאלה לקהל: מי ייקח?',pkg:135},
  {t:'"לא האמנתי שזה קורה לי באמת", הזוכה בגמר מדבר',cat:'ריאליטי',src:['במה ומסך'],ago:70,sc:9,why:'ציטוט רגשי, תבנית "ציטוט" מצליחה אצלכם',pkg:140},
@@ -415,17 +415,24 @@ const NEWS=[
  {t:'שחקן הסדרה הצטרף להפקה הוליוודית',cat:'קולנוע',src:['במה ומסך','פופ-ניוז','חדשות הלילה'],ago:130,sc:7,why:'גאווה מקומית, עובד טוב בפייסבוק',fresh:true},
  {t:'מחירי הכרטיסים להופעות עלו ב-20%',cat:'מוזיקה',src:['חדשות הלילה'],ago:180,sc:5,why:'לא נבחר: נושא צרכני, פחות מתאים לטון של הדף'}
 ];
+NEWS.push(
+ {t:'הודעה רשמית: גמר תוכנית השירה יועבר בשידור חי מאמפי',cat:'טלוויזיה',src:['הודעת הערוץ','Google News'],off:true,ago:31,sc:8,why:'הודעה רשמית מהערוץ, ותאריך שאפשר לבנות סביבו ספירה לאחור',fresh:true},
+ {t:'קולקציית הקיץ של רשת האופנה עם כוכבת הריאליטי',cat:'אופנה',src:['מגזין סטייל'],promo:true,ago:60,sc:3,why:'לא נבחר: תוכן שיווקי. סומן והועבר לסוף הרשימה'}
+);
+const imp=n=>n.promo?0:n.src.length*2+(n.off?3:0)+(n.ago<180?2:n.ago<720?1:0);
+const impLbl=n=>{const v=imp(n);return v>=8?['גבוהה','hi']:v>=5?['בינונית','mid']:['נמוכה','']};
 const agoTxt=m=>m<60?`לפני ${m} דק'`:`לפני ${Math.floor(m/60)} ש'`+(m%60?` ו-${m%60} דק'`:'');
 function renderRadar(){
   const cats=[...new Set(NEWS.map(n=>n.cat))];
-  const cf=S.rcat||'all', sort=S.rsort||'score', show=S.rshow||'all', q=(S.rq||'').trim();
+  const cf=S.rcat||'all', sort=S.rsort||'imp', show=S.rshow||'all', q=(S.rq||'').trim();
   let items=NEWS.filter(n=>(cf==='all'||n.cat===cf)&&(show==='all'||(show==='in'?n.sc>=THR:n.sc<THR))&&(!q||n.t.includes(q)));
-  items.sort(sort==='score'?(a,b)=>b.sc-a.sc||a.ago-b.ago:sort==='new'?(a,b)=>a.ago-b.ago:(a,b)=>b.src.length-a.src.length||b.sc-a.sc);
+  items.sort(sort==='imp'?(a,b)=>imp(b)-imp(a)||a.ago-b.ago:sort==='score'?(a,b)=>b.sc-a.sc||a.ago-b.ago:sort==='new'?(a,b)=>a.ago-b.ago:(a,b)=>b.src.length-a.src.length||b.sc-a.sc);
+  items.sort((a,b)=>(a.promo?1:0)-(b.promo?1:0));
   const chip=(k,l,c)=>`<button data-rcat="${k}" aria-pressed="${cf===k}">${l} <span class="num">${c}</span></button>`;
   const row=n=>{const i=NEWS.indexOf(n);const cls=n.sc>=THR?'hi':n.sc>=5?'mid':'';const p=n.pkg&&P.find(x=>x.id===n.pkg);
     return `<article class="ni ${n.sc<THR?'skip':''}"><div class="score ${cls}" title="ציון התאמה לדף">${n.sc}<small>/10</small></div>
     <div style="min-width:0"><h3>${esc(n.t)}</h3>
-      <div class="m"><span>${esc(n.cat)}</span>·<span>${agoTxt(n.ago)}</span>·<button class="srcbtn" data-srcs="${i}">${n.src.length>1?n.src.length+' מקורות':esc(n.src[0])}</button></div>
+      <div class="m">${n.ago<=S.lastVisit?'<span class="pill p-wait">חדש</span>':''}${n.off?'<span class="pill p-done">רשמי</span>':''}${n.promo?'<span class="pill p-part">שיווקי</span>':''}<span title="מקורות ×2, הודעה רשמית +3, טריות +2">חשיבות: <b>${impLbl(n)[0]}</b></span>·<span>${esc(n.cat)}</span>·<span>${agoTxt(n.ago)}</span>·<button class="srcbtn" data-srcs="${i}">${n.src.length>1?n.src.length+' מקורות':esc(n.src[0])}</button></div>
       ${S.rsrc===i?`<div class="srcs">${n.src.map(x=>`<span class="n">${esc(x)}</span>`).join('')}</div>`:''}
       <p class="why"><b>Claude:</b> ${esc(n.why)}</p></div>
     <div class="act">${p?`<span class="pill ${ST[status(p)][0]}">${ST[status(p)][1]}</span><button class="unmark" data-open="${p.id}">לחבילה ←</button>`
@@ -433,7 +440,7 @@ function renderRadar(){
       :n.sc>=THR?`<span class="pill p-proc">בהכנה...</span>`
       :`<span class="pill p-proc">לא נבחר</span><button class="unmark" data-force="${i}">הכנת חבילה בכל זאת</button>`}</div></article>`};
   let list='';
-  if(sort==='score'&&show==='all'){
+  if((sort==='score'||sort==='imp')&&show==='all'){
     const a=items.filter(n=>n.sc>=THR),b=items.filter(n=>n.sc<THR);
     list=a.map(row).join('')+(b.length?`<div class="divider">מתחת לסף. Claude לא בחר, אבל אפשר להחזיר</div>`+b.map(row).join(''):'');
   } else list=items.map(row).join('');
@@ -441,10 +448,12 @@ function renderRadar(){
   `<div class="pipe"><span class="st"><span class="pulse" aria-hidden="true"></span><b>סורקת</b></span><span class="st">נאספו היום <b class="num">72</b></span><span class="st">אחרי איחוד כפילויות <b class="num">${NEWS.length+46}</b></span><span class="st">נבחרו <b class="num">${NEWS.filter(n=>n.sc>=THR).length+3}</b></span></div>
   <div class="filters" role="group" aria-label="קטגוריה">${chip('all','הכול',NEWS.length)}${cats.map(c=>chip(c,c,NEWS.filter(n=>n.cat===c).length)).join('')}</div>
   <div class="radar-bar">
-    <label class="field" for="rsort" style="display:flex;gap:6px;align-items:center">מיון <select id="rsort"><option value="score" ${sort==='score'?'selected':''}>הכי מתאים לדף</option><option value="new" ${sort==='new'?'selected':''}>הכי חדש</option><option value="src" ${sort==='src'?'selected':''}>הכי מדווח (מקורות)</option></select></label>
+    <label class="field" for="rsort" style="display:flex;gap:6px;align-items:center">מיון <select id="rsort"><option value="imp" ${sort==='imp'?'selected':''}>לפי חשיבות</option><option value="score" ${sort==='score'?'selected':''}>הכי מתאים לדף</option><option value="new" ${sort==='new'?'selected':''}>הכי חדש</option><option value="src" ${sort==='src'?'selected':''}>הכי מדווח (מקורות)</option></select></label>
     <label class="field" for="rshow" style="display:flex;gap:6px;align-items:center">הצגה <select id="rshow"><option value="all" ${show==='all'?'selected':''}>הכול</option><option value="in" ${show==='in'?'selected':''}>רק נבחרו</option><option value="out" ${show==='out'?'selected':''}>רק לא נבחרו</option></select></label>
     <input id="rq" type="search" placeholder="חיפוש ידיעה..." value="${esc(q)}" aria-label="חיפוש">
     <span class="thr">סף בחירה: <b class="num">${THR}</b> (שלב 1.3)</span>
+  </div>
+  <div class="howto" style="background:var(--chip);border-radius:10px;padding:10px 14px;font-size:.85rem;color:var(--muted)"><b style="color:var(--ink)">איך ממוין:</b> רק 24 השעות האחרונות. חשיבות = כמה מקורות דיווחו + הודעה רשמית + טריות. התאמה לדף = הציון של Claude. תוכן שיווקי מסומן ויורד לסוף. "חדש" = הגיע מאז הביקור הקודם שלך.
   </div>
   <div class="feedlist">${list||'<p class="sub">אין ידיעות שמתאימות לסינון.</p>'}</div>`;
 }
@@ -717,6 +726,8 @@ function renderSettings(){
   `<div class="two">
     <div class="panel"><h2>מקורות חדשות</h2>
       <div class="list">${SOURCES.map((s,i)=>`<div class="item"><div><b>${esc(s.name)}</b><div class="s">${esc(s.s)}</div></div><input type="checkbox" class="sw" id="src${i}" data-src="${i}" ${s.on?'checked':''} aria-label="סריקת ${esc(s.name)}"></div>`).join('')}</div>
+      <div class="item"><div><b>חיפושים ב-Google News</b><div class="s">"גמר ריאליטי" · "סינגל חדש" · "עונה שנייה" · "הופעה" · + 12 מונחים</div></div><input type="checkbox" class="sw" id="gnews" checked aria-label="חיפושים ב-Google News"></div>
+      <div class="item"><div><b>מסוננים החוצה</b><div class="s">פוליטיקה · ביטחון · תאונות · פלילים. תוכן שיווקי מסומן ויורד לסוף</div></div><input type="checkbox" class="sw" id="excl" checked aria-label="סינון נושאים"></div>
       <label class="field" for="freq">תדירות סריקה
         <select id="freq"><option>כל 5 דקות</option><option selected>כל 10 דקות</option><option>כל 30 דקות</option></select></label>
     </div>

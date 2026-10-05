@@ -184,6 +184,28 @@ details.hist summary{cursor:pointer;font-weight:800;font-size:.9rem}
 .heads{display:grid;gap:6px}
 .heads div{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 12px}
 .heads div.cur{border-color:var(--ok);background:var(--ok-soft)}
+.radar-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.radar-bar select,.radar-bar input{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 12px}
+.radar-bar input{flex:1;min-width:160px}
+.thr{font-size:.85rem;color:var(--muted);display:flex;gap:6px;align-items:center}
+.thr b{color:var(--ink)}
+.feedlist{display:grid;gap:8px}
+.ni{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:start}
+.ni.skip{background:var(--raised)}
+.ni.skip h3,.ni.skip .why{opacity:.75}
+.score{width:52px;height:52px;border-radius:12px;display:grid;place-items:center;font-family:var(--display);font-size:1.5rem;line-height:1;background:var(--chip);color:var(--muted)}
+.score small{font-family:var(--body);font-size:.62rem;font-weight:800;display:block;margin-top:-6px}
+.score.hi{background:var(--ok-soft);color:var(--ok)}
+.score.mid{background:var(--wait-soft);color:var(--wait)}
+.ni h3{font-family:var(--body);font-weight:800;font-size:1rem;line-height:1.35}
+.ni .m{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:.8rem;color:var(--muted);margin-top:4px}
+.ni .why{font-size:.88rem;margin-top:6px}
+.ni .why b{color:var(--ai,var(--live))}
+.srcs{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.srcbtn{border:0;background:var(--chip);border-radius:99px;padding:1px 9px;font-size:.78rem;font-weight:800;color:var(--muted)}
+.ni .act{display:grid;gap:6px;justify-items:end}
+.divider{font-size:.8rem;font-weight:800;color:var(--muted);letter-spacing:.04em;padding-top:8px;border-top:1px dashed var(--line)}
+@media (max-width:560px){.ni{grid-template-columns:44px 1fr}.ni .act{grid-column:1/-1;justify-items:start}.score{width:44px;height:44px;font-size:1.25rem}}
 .insights{background:var(--live-soft);border-radius:14px;padding:18px;display:grid;gap:10px}
 .insights h2{font-size:1.2rem}
 .insights ul{margin:0;padding-inline-start:20px;display:grid;gap:6px}
@@ -243,6 +265,7 @@ th{color:var(--muted);font-weight:700;font-size:.82rem}
   <aside class="rail">
     <div class="brand"><span class="on" aria-hidden="true"></span>הדסק</div>
     <nav class="nav" aria-label="ניווט">
+      <button data-view="radar"><span>ידיעות נכנסות</span></button>
       <button data-view="list"><span>חבילות</span><span class="badge num" id="waitBadge">0</span></button>
       <button data-view="dash"><span>לוח מנהלת</span></button>
       <button data-view="perf"><span>ביצועים</span></button>
@@ -376,6 +399,65 @@ const fmt=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(
 function seedStats(p,t){const base={ig:9000,fb:5200,tt:16000,x:2100,yt:7400}[t];const k=(p.kind==='video'?2.3:p.kind==='quote'?1.3:1)*(1+((p.id*7+t.length*13)%10)/10);const v=Math.round(base*k);return {v,l:Math.round(v*.068),c:Math.round(v*.009),s:Math.round(v*.004)}}
 P.forEach(p=>Object.entries(p.up).forEach(([t,u])=>{u.link=`https://${t==='ig'?'instagram.com/p':t==='fb'?'facebook.com/posts':t==='tt'?'tiktok.com/@page/video':t==='x'?'x.com/page/status':'youtube.com/shorts'}/${p.id}${t}`;u.stats=seedStats(p,t)}));
 const views=p=>Object.values(p.up).reduce((a,u)=>a+(u.stats?u.stats.v:0),0);
+const THR=7;
+const NEWS=[
+ {t:'פסטיבל "גלים" חושף את ההרכב המלא',cat:'מוזיקה',src:['פופ-ניוז','במה ומסך','חדשות הלילה'],ago:17,sc:9,why:'סיפור שכולם מדווחים עליו, מעורבות גבוהה בפוסטים דומים',pkg:142},
+ {t:'רשמי: העונה השנייה של "חוף הלילה" יוצאת בדצמבר',cat:'טלוויזיה',src:['במה ומסך','פופ-ניוז'],ago:145,sc:8,why:'הסדרה עם הכי הרבה תגובות אצלכם החודש',pkg:139},
+ {t:'הסינגל החדש שבר שיא האזנות ביום הראשון',cat:'מוזיקה',src:['פופ-ניוז'],ago:170,sc:8,why:'שיא ומספרים עובדים טוב בטיקטוק',pkg:137},
+ {t:'הוכרזו המועמדים לפרס המוזיקה השנתי',cat:'מוזיקה',src:['חדשות הלילה','פופ-ניוז'],ago:215,sc:7,why:'מזמין שאלה לקהל: מי ייקח?',pkg:135},
+ {t:'"לא האמנתי שזה קורה לי באמת", הזוכה בגמר מדבר',cat:'ריאליטי',src:['במה ומסך'],ago:70,sc:9,why:'ציטוט רגשי, תבנית "ציטוט" מצליחה אצלכם',pkg:140},
+ {t:'דיווח: שני כוכבי הריאליטי נפרדו?',cat:'רכילות',src:['חדשות הלילה'],ago:24,sc:6,why:'לא נבחר: מקור אחד בלבד והדיווח לא מאומת. אם עוד אתר יאשר, אעלה את הציון'},
+ {t:'הטריילר הרשמי לסרט הקיץ שוחרר',cat:'קולנוע',src:['במה ומסך','פופ-ניוז'],ago:38,sc:7,why:'טריילר מתאים לוידאו קצר, אבל דורש חומר וידאו',fresh:true},
+ {t:'הכוכבת השיקה קו אופנה חדש',cat:'אופנה',src:['מגזין סטייל'],ago:52,sc:4,why:'לא נבחר: אופנה מקבלת אצלכם מעורבות נמוכה'},
+ {t:'הלהקה הודיעה על הופעת איחוד אחת בלבד',cat:'מוזיקה',src:['פופ-ניוז','חדשות הלילה'],ago:9,sc:9,why:'נוסטלגיה + "פעם אחת בלבד" = סיפור חזק. בהכנה עכשיו',fresh:true},
+ {t:'רייטינג: התוכנית החדשה פתחה חלש',cat:'טלוויזיה',src:['במה ומסך'],ago:95,sc:5,why:'לא נבחר: מספרי רייטינג לא מעניינים את הקהל שלכם'},
+ {t:'מאחורי הקלעים של הקליפ החדש',cat:'מוזיקה',src:['ערוץ יוטיוב: קליפים חדשים'],ago:4,sc:8,why:'וידאו מקורי, נמצא בתמלול',pkg:138},
+ {t:'שחקן הסדרה הצטרף להפקה הוליוודית',cat:'קולנוע',src:['במה ומסך','פופ-ניוז','חדשות הלילה'],ago:130,sc:7,why:'גאווה מקומית, עובד טוב בפייסבוק',fresh:true},
+ {t:'מחירי הכרטיסים להופעות עלו ב-20%',cat:'מוזיקה',src:['חדשות הלילה'],ago:180,sc:5,why:'לא נבחר: נושא צרכני, פחות מתאים לטון של הדף'}
+];
+const agoTxt=m=>m<60?`לפני ${m} דק'`:`לפני ${Math.floor(m/60)} ש'`+(m%60?` ו-${m%60} דק'`:'');
+function renderRadar(){
+  const cats=[...new Set(NEWS.map(n=>n.cat))];
+  const cf=S.rcat||'all', sort=S.rsort||'score', show=S.rshow||'all', q=(S.rq||'').trim();
+  let items=NEWS.filter(n=>(cf==='all'||n.cat===cf)&&(show==='all'||(show==='in'?n.sc>=THR:n.sc<THR))&&(!q||n.t.includes(q)));
+  items.sort(sort==='score'?(a,b)=>b.sc-a.sc||a.ago-b.ago:sort==='new'?(a,b)=>a.ago-b.ago:(a,b)=>b.src.length-a.src.length||b.sc-a.sc);
+  const chip=(k,l,c)=>`<button data-rcat="${k}" aria-pressed="${cf===k}">${l} <span class="num">${c}</span></button>`;
+  const row=n=>{const i=NEWS.indexOf(n);const cls=n.sc>=THR?'hi':n.sc>=5?'mid':'';const p=n.pkg&&P.find(x=>x.id===n.pkg);
+    return `<article class="ni ${n.sc<THR?'skip':''}"><div class="score ${cls}" title="ציון התאמה לדף">${n.sc}<small>/10</small></div>
+    <div style="min-width:0"><h3>${esc(n.t)}</h3>
+      <div class="m"><span>${esc(n.cat)}</span>·<span>${agoTxt(n.ago)}</span>·<button class="srcbtn" data-srcs="${i}">${n.src.length>1?n.src.length+' מקורות':esc(n.src[0])}</button></div>
+      ${S.rsrc===i?`<div class="srcs">${n.src.map(x=>`<span class="n">${esc(x)}</span>`).join('')}</div>`:''}
+      <p class="why"><b>Claude:</b> ${esc(n.why)}</p></div>
+    <div class="act">${p?`<span class="pill ${ST[status(p)][0]}">${ST[status(p)][1]}</span><button class="unmark" data-open="${p.id}">לחבילה ←</button>`
+      :n.made?`<button class="unmark" data-open="${n.made}">לחבילה ←</button>`
+      :n.sc>=THR?`<span class="pill p-proc">בהכנה...</span>`
+      :`<span class="pill p-proc">לא נבחר</span><button class="unmark" data-force="${i}">הכנת חבילה בכל זאת</button>`}</div></article>`};
+  let list='';
+  if(sort==='score'&&show==='all'){
+    const a=items.filter(n=>n.sc>=THR),b=items.filter(n=>n.sc<THR);
+    list=a.map(row).join('')+(b.length?`<div class="divider">מתחת לסף. Claude לא בחר, אבל אפשר להחזיר</div>`+b.map(row).join(''):'');
+  } else list=items.map(row).join('');
+  return header('ידיעות נכנסות','כל מה שהמערכת אספה היום, ממוין. כאן רואים מה נבחר ולמה.')+
+  `<div class="pipe"><span class="st"><span class="pulse" aria-hidden="true"></span><b>סורקת</b></span><span class="st">נאספו היום <b class="num">72</b></span><span class="st">אחרי איחוד כפילויות <b class="num">${NEWS.length+46}</b></span><span class="st">נבחרו <b class="num">${NEWS.filter(n=>n.sc>=THR).length+3}</b></span></div>
+  <div class="filters" role="group" aria-label="קטגוריה">${chip('all','הכול',NEWS.length)}${cats.map(c=>chip(c,c,NEWS.filter(n=>n.cat===c).length)).join('')}</div>
+  <div class="radar-bar">
+    <label class="field" for="rsort" style="display:flex;gap:6px;align-items:center">מיון <select id="rsort"><option value="score" ${sort==='score'?'selected':''}>הכי מתאים לדף</option><option value="new" ${sort==='new'?'selected':''}>הכי חדש</option><option value="src" ${sort==='src'?'selected':''}>הכי מדווח (מקורות)</option></select></label>
+    <label class="field" for="rshow" style="display:flex;gap:6px;align-items:center">הצגה <select id="rshow"><option value="all" ${show==='all'?'selected':''}>הכול</option><option value="in" ${show==='in'?'selected':''}>רק נבחרו</option><option value="out" ${show==='out'?'selected':''}>רק לא נבחרו</option></select></label>
+    <input id="rq" type="search" placeholder="חיפוש ידיעה..." value="${esc(q)}" aria-label="חיפוש">
+    <span class="thr">סף בחירה: <b class="num">${THR}</b> (שלב 1.3)</span>
+  </div>
+  <div class="feedlist">${list||'<p class="sub">אין ידיעות שמתאימות לסינון.</p>'}</div>`;
+}
+function forcePackage(i){
+  const n=NEWS[i];clock++;
+  const p={id:Math.max(...P.map(x=>x.id))+1,kind:'proc',h:(clock*53)%360,cat:n.cat,src:n.src.join(', ')+' · הוחזר ע"י '+S.me,at:hm(clock),targets:['ig','fb','x'],hl:n.t,tx:{},up:{}};
+  P.unshift(p);n.made=p.id;
+  LOG.unshift({at:hm(clock),by:S.me,pid:p.id,text:'החזיר/ה ידיעה שלא נבחרה: '+n.t});
+  render();toast('נשלח ל-Claude. החבילה תופיע בחבילות בעוד רגע');
+  setTimeout(()=>{p.kind='hot';p.heads=[n.t,'רשמי: '+n.t,n.t+', וזה רק ההתחלה','כולם מדברים על זה: '+n.t,n.t+'? הנה מה שידוע'];
+    p.tx={ig:n.t+' 🔥\nמה דעתכם? כתבו בתגובות 👇',fb:n.t+'.\n\nמה אתם אומרים?',x:n.t.slice(0,120)};
+    clock++;LOG.unshift({at:hm(clock),by:'Claude',pid:p.id,text:'הכין חבילה: '+n.t});render();toast('החבילה מוכנה ✓')},2200);
+}
 const MODES={short:'קצר יותר',noemoji:'בלי אימוג\'ים',formal:'רשמי יותר',other:'גרסה אחרת'};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -655,7 +737,7 @@ let capTimer=null;
 function render(){
   clearInterval(capTimer);
   const m=$('#main');
-  m.innerHTML=S.view==='list'?(S.open?renderDetail():renderList()):S.view==='dash'?renderDash():S.view==='perf'?renderPerf():S.view==='new'?renderNew():renderSettings();
+  m.innerHTML=S.view==='list'?(S.open?renderDetail():renderList()):S.view==='dash'?renderDash():S.view==='perf'?renderPerf():S.view==='radar'?renderRadar():S.view==='new'?renderNew():renderSettings();
   nav();
   const ms=$('#meSel2');if(ms)ms.addEventListener('change',e=>setMe(e.target.value));
   startCaps();
@@ -700,6 +782,9 @@ document.addEventListener('click',e=>{
   if('imgedit' in b.dataset){S.imgEdit=!S.imgEdit;render();return}
   if('imgcancel' in b.dataset){S.imgEdit=false;render();return}
   if('imgsave' in b.dataset&&p){const v=$('#imgHl').value.trim();S.imgEdit=false;if(v){p.img=v;clock++;LOG.unshift({at:hm(clock),by:S.me,pid:p.id,text:'שינה/תה את הכותרת בתמונה: '+p.hl})}render();toast('התמונה עודכנה');return}
+  if(b.dataset.rcat){S.rcat=b.dataset.rcat;render();return}
+  if(b.dataset.srcs){const i=+b.dataset.srcs;S.rsrc=S.rsrc===i?null:i;render();return}
+  if(b.dataset.force){forcePackage(+b.dataset.force);return}
   if('fake' in b.dataset){toast('במערכת האמיתית נפתח הפוסט ברשת');return}
   if('new' in b.dataset){S.view='new';S.open=null;S.src='text';render();scrollTo(0,0);return}
   if(b.dataset.src){S.src=b.dataset.src;render();return}
@@ -714,6 +799,9 @@ function runRewrite(p,mode,instr){
   const k=S.tab;S.busy=true;render();
   setTimeout(()=>{S.busy=false;addVersion(p,k,rewrite(p,k,mode,instr),mode?MODES[mode]:'בקשה: '+instr);if(S.open===p.id)render();toast('Claude כתב גרסה חדשה. אפשר לשחזר את הקודמת מההיסטוריה')},1100);
 }
+document.addEventListener('input',e=>{
+  if(e.target.id==='rq'){S.rq=e.target.value;const pos=e.target.selectionStart;render();const i=$('#rq');if(i){i.focus();i.setSelectionRange(pos,pos)}}
+});
 document.addEventListener('submit',e=>{
   e.preventDefault();
   if('newform' in e.target.dataset){createItem();return}
@@ -724,6 +812,8 @@ document.addEventListener('submit',e=>{
   if('cmform' in e.target.dataset){const v=$('#cmIn').value.trim();if(!v)return;clock++;(COMMENTS[p.id]=COMMENTS[p.id]||[]).push({by:S.me,at:hm(clock),text:v});LOG.unshift({at:hm(clock),by:S.me,pid:p.id,text:'הגיב/ה על '+p.hl});render();toast('ההערה נשלחה לצוות')}
 });
 document.addEventListener('change',e=>{
+  if(e.target.id==='rsort'){S.rsort=e.target.value;render();return}
+  if(e.target.id==='rshow'){S.rshow=e.target.value;render();return}
   if(e.target.dataset.src!==undefined){const s=SOURCES[+e.target.dataset.src];s.on=e.target.checked;toast(s.on?`${s.name} נכלל בסריקה`:`${s.name} הושבת`)}
 });
 
